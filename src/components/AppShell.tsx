@@ -44,9 +44,9 @@ export default function AppShell({ user, children }: { user: SessionUser; childr
               Clientes
             </Link>
             {user.role === "ADMIN" ? (
-              <Link className="nav-link" href="/usuarios">
-                <i className="bi bi-person-gear me-2" />
-                Usuários
+              <Link className="nav-link" href="/administracao">
+                <i className="bi bi-ui-checks-grid me-2" />
+                Administração
               </Link>
             ) : null}
             {user.role === "ADMIN" ? (
