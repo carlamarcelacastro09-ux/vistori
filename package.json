@@ -1,0 +1,47 @@
+{
+  "name": "vistori-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:import:sheets": "tsx src/scripts/import-from-sheets.ts",
+    "db:import:master": "tsx src/scripts/import-master-data.ts",
+    "db:report:sheets": "tsx src/scripts/report-missing-from-sheets.ts",
+    "db:cleanup:streets": "tsx src/scripts/cleanup-streets.ts",
+    "robot:run": "tsx src/robot/worker.ts",
+    "robot:once": "cross-env ROBOT_RUN_ONCE=1 tsx src/robot/worker.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-sqs": "^3.1030.0",
+    "@prisma/adapter-pg": "^7.7.0",
+    "@prisma/client": "^7.7.0",
+    "bcryptjs": "^3.0.3",
+    "csv-parse": "^6.2.1",
+    "iron-session": "^8.0.4",
+    "next": "16.2.4",
+    "pg": "^8.20.0",
+    "playwright": "^1.59.1",
+    "prisma": "^7.7.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "cross-env": "^10.1.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.4",
+    "tsx": "^4.21.0",
+    "typescript": "^5"
+  }
+}

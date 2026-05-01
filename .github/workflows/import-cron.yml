@@ -1,0 +1,31 @@
+name: Import Sheets Cron
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  import-sheets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SHEETS_CSV_URL: ${{ secrets.SHEETS_CSV_URL }}
+      IMPORT_USER_EMAIL: ${{ secrets.IMPORT_USER_EMAIL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Import from Sheets (ATENDIMENTO)
+        run: npm run db:import:sheets
+

@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  OPERADOR
+}
+
+enum InvoiceStatus {
+  AGUARDANDO
+  EMITIDA
+  ERRO
+}
+
+enum InvoiceJobStatus {
+  FILA
+  PROCESSANDO
+  CONCLUIDO
+  ERRO
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         UserRole @default(OPERADOR)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  inspections Inspection[] @relation("InspectionsCreatedBy")
+
+  @@index([role])
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  doc       String   @unique
+  name      String
+  street    String
+  number    String
+  district  String
+  city      String
+  cep       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inspections Inspection[]
+}
+
+model Vehicle {
+  id        String   @id @default(uuid())
+  plate     String   @unique
+  brand     String
+  model     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inspections Inspection[]
+}
+
+model VehicleCatalog {
+  id        String   @id @default(uuid())
+  model     String   @unique
+  brand     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([brand])
+}
+
+model Street {
+  id        String   @id @default(uuid())
+  street    String
+  district  String
+  city      String
+  cep       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([street, district, city, cep])
+  @@index([street])
+  @@index([cep])
+  @@index([city])
+}
+
+model Inspection {
+  id            String        @id @default(uuid())
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  date          DateTime      @default(now())
+  paidValue     Decimal       @db.Decimal(12, 2)
+  noteValue     Decimal       @default(25.00) @db.Decimal(12, 2)
+  status        InvoiceStatus @default(AGUARDANDO)
+  nfseNumber    String?
+  errorMessage  String?
+
+  customerId    String
+  customer      Customer      @relation(fields: [customerId], references: [id])
+
+  vehicleId     String?
+  vehicle       Vehicle?      @relation(fields: [vehicleId], references: [id])
+
+  createdById   String
+  createdBy     User          @relation("InspectionsCreatedBy", fields: [createdById], references: [id])
+
+  job           InvoiceJob?
+
+  @@index([date])
+  @@index([status])
+  @@index([customerId])
+  @@index([vehicleId])
+  @@index([createdById])
+}
+
+model InvoiceJob {
+  id          String          @id @default(uuid())
+  status      InvoiceJobStatus @default(FILA)
+  attempts    Int             @default(0)
+  lastError   String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  inspectionId String  @unique
+  inspection   Inspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}

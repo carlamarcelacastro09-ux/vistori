@@ -1,0 +1,37 @@
+name: Robot Cron
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  run-robot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+      ROBOT_API_KEY: ${{ secrets.ROBOT_API_KEY }}
+      PREFEITURA_LOGIN_URL: ${{ secrets.PREFEITURA_LOGIN_URL }}
+      PREFEITURA_EMISSAO_URL: ${{ secrets.PREFEITURA_EMISSAO_URL }}
+      PREFEITURA_USERNAME: ${{ secrets.PREFEITURA_USERNAME }}
+      PREFEITURA_PASSWORD: ${{ secrets.PREFEITURA_PASSWORD }}
+      PREFEITURA_CNPJ: ${{ secrets.PREFEITURA_CNPJ }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run robot once
+        run: npm run robot:once
