@@ -1,15 +1,11 @@
 import { PrismaClient } from "@/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { resolveDatabaseUrlFromEnv } from "../../prisma/datasource-env";
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 function resolveDatabaseUrl(): string | undefined {
-  return (
-    process.env.DATABASE_URL ||
-    process.env.POSTGRES_URL ||
-    process.env.POSTGRES_PRISMA_URL ||
-    process.env.PRISMA_DATABASE_URL
-  );
+  return resolveDatabaseUrlFromEnv();
 }
 
 function getPrismaClient(): PrismaClient {
