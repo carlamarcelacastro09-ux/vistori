@@ -3,17 +3,42 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-const connectionString = process.env.DATABASE_URL;
-if (!connectionString) {
-  throw new Error("DATABASE_URL não configurado.");
+function resolveDatabaseUrl(): string | undefined {
+  return (
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.PRISMA_DATABASE_URL
+  );
 }
-const adapter = new PrismaPg({ connectionString });
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
+function getPrismaClient(): PrismaClient {
+  if (globalForPrisma.prisma) return globalForPrisma.prisma;
+
+  const connectionString = resolveDatabaseUrl();
+  if (!connectionString) {
+    throw new Error("DATABASE_URL não configurado.");
+  }
+  const adapter = new PrismaPg({ connectionString });
+  const client = new PrismaClient({
     adapter,
     log: ["error", "warn"],
   });
+  globalForPrisma.prisma = client;
+  return client;
+}
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+/**
+ * Sob demanda: evita erro na importação do módulo durante `next build` quando ainda não há DATABASE_URL no ambiente de compilação.
+ * Na primeira chamada real ao banco, DATABASE_URL já deve existir (Vercel, local com .env, etc.).
+ */
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop, receiver) {
+    const client = getPrismaClient();
+    const value = Reflect.get(client, prop, receiver);
+    if (typeof value === "function") {
+      return value.bind(client);
+    }
+    return value;
+  },
+}) as unknown as PrismaClient;
