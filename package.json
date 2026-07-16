@@ -17,7 +17,7 @@
     "db:report:sheets": "tsx src/scripts/report-missing-from-sheets.ts",
     "db:cleanup:streets": "tsx src/scripts/cleanup-streets.ts",
     "robot:run": "tsx src/robot/worker.ts",
-    "robot:once": "cross-env ROBOT_RUN_ONCE=1 ROBOT_HEADLESS=0 tsx src/robot/worker.ts"
+    "robot:once": "cross-env ROBOT_RUN_ONCE=1 ROBOT_HEADLESS=1 tsx src/robot/worker.ts"
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.1030.0",
