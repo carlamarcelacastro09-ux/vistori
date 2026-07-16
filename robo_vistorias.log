@@ -1,0 +1,9 @@
+2026-06-19 23:42:46,583 - INFO - Iniciando emissoes para a data alvo: 19/06/2026
+2026-06-19 23:51:03,953 - INFO - Iniciando emissoes para a data alvo: 19/06/2026
+2026-06-19 23:51:38,963 - ERROR - Erro inicializacao: Locator.click: Target page, context or browser has been closed
+Call log:
+  - waiting for locator("button:has-text(\"Acessar\"), button[type=\"submit\"]").first
+
+2026-06-19 23:57:12,321 - INFO - Iniciando emissoes para a data alvo: 19/06/2026
+2026-06-20 00:03:45,907 - INFO - Iniciando emissoes para a data alvo: 20/06/2026
+2026-06-20 00:04:58,593 - INFO - Iniciando emissoes para a data alvo: 20/06/2026

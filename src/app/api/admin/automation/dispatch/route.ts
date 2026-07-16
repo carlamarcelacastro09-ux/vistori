@@ -2,14 +2,52 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getSession } from "@/lib/session";
 
+export const maxDuration = 30;
+
 const bodySchema = z.object({
   workflow: z.enum(["robot", "import"]),
 });
 
-function requiredEnv(name: string) {
-  const v = process.env[name];
-  if (!v) throw new Error(`Variável ${name} não configurada.`);
-  return v;
+const WORKFLOW_FILE: Record<string, string> = {
+  robot: "robot-cron.yml",
+  import: "import-cron.yml",
+};
+
+const WORKFLOW_LABEL: Record<string, string> = {
+  robot: "Robô",
+  import: "Importação",
+};
+
+async function triggerGitHubWorkflow(workflow: string) {
+  const owner = process.env.GITHUB_OWNER;
+  const repo = process.env.GITHUB_REPO;
+  const token = process.env.GITHUB_TOKEN;
+  const ref = process.env.GITHUB_REF || "main";
+
+  if (!owner || !repo || !token) {
+    throw new Error("GITHUB_OWNER, GITHUB_REPO e GITHUB_TOKEN precisam estar configurados na Vercel.");
+  }
+
+  const file = WORKFLOW_FILE[workflow];
+  const url = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${file}/dispatches`;
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ ref }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`GitHub API retornou ${res.status}: ${body.slice(0, 200)}`);
+  }
+
+  return WORKFLOW_LABEL[workflow];
 }
 
 export async function POST(req: Request) {
@@ -23,31 +61,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, message: "Dados inválidos." }, { status: 400 });
   }
 
-  const owner = requiredEnv("GITHUB_OWNER");
-  const repo = requiredEnv("GITHUB_REPO");
-  const token = requiredEnv("GITHUB_TOKEN");
-  const ref = process.env.GITHUB_REF || "main";
-
-  const workflowFile = parsed.data.workflow === "robot" ? "robot-cron.yml" : "import-cron.yml";
-  const url = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflowFile}/dispatches`;
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      accept: "application/vnd.github+json",
-      authorization: `Bearer ${token}`,
-      "x-github-api-version": "2022-11-28",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({ ref }),
-  }).catch(() => null);
-
-  if (!res) return NextResponse.json({ ok: false, message: "Falha de conexão com GitHub." }, { status: 502 });
-  if (res.status !== 204) {
-    const text = await res.text().catch(() => "");
-    return NextResponse.json({ ok: false, message: `GitHub retornou ${res.status}. ${text}`.trim() }, { status: 502 });
+  try {
+    const label = await triggerGitHubWorkflow(parsed.data.workflow);
+    return NextResponse.json({
+      ok: true,
+      message: `${label} disparado via GitHub Actions. Acompanhe o progresso na aba Actions do GitHub.`,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Erro ao disparar workflow.";
+    return NextResponse.json({ ok: false, message }, { status: 500 });
   }
-
-  return NextResponse.json({ ok: true });
 }
 

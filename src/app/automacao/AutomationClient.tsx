@@ -29,7 +29,7 @@ export default function AutomationClient() {
       return;
     }
 
-    setMessage("Disparo enviado. Acompanhe em GitHub → Actions.");
+    setMessage(data?.message ?? "Processo iniciado em segundo plano.");
   }
 
   return (
@@ -65,7 +65,7 @@ export default function AutomationClient() {
               Observações
             </div>
             <ul className="text-muted mb-0" style={{ fontSize: 13 }}>
-              <li>Isso não roda no navegador: ele dispara um workflow do GitHub Actions.</li>
+              <li>O botão inicia o robô ou a importação diretamente neste computador/servidor.</li>
               <li>O robô só processa registros completos (endereço + veículo).</li>
               <li>Use quando quiser “forçar” a rodada sem esperar o horário do cron.</li>
             </ul>

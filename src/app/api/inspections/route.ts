@@ -96,12 +96,13 @@ export async function POST(req: Request) {
   });
 
   const paidValueStr = data.paidValue.toFixed(2);
+  const noteValueStr = data.noteValue.toFixed(2);
 
   const inspection = await prisma.inspection.create({
     data: {
       date: new Date(),
       paidValue: paidValueStr,
-      noteValue: "25.00",
+      noteValue: noteValueStr,
       customerId: customer.id,
       vehicleId: vehicle.id,
       createdById: session.user.id,

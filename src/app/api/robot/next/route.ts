@@ -37,9 +37,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
+  const cincoMinutosAtras = new Date(Date.now() - 5 * 60 * 1000);
   for (let i = 0; i < 15; i++) {
     const job = await prisma.invoiceJob.findFirst({
-      where: { status: "FILA" },
+      where: {
+        OR: [
+          { status: "FILA" },
+          { status: "PROCESSANDO", updatedAt: { lt: cincoMinutosAtras }, attempts: { lt: 3 } },
+        ],
+        inspection: {
+          status: { notIn: ["EMITIDA", "LANCADO"] },
+          nfseNumber: null,
+        },
+      },
       orderBy: { createdAt: "asc" },
       include: {
         inspection: {

@@ -163,8 +163,11 @@ export default function LoginForm() {
 
         {!dbConnected ? (
           <div className="alert alert-warning small py-2 mb-3">
-            O servidor não conseguiu falar com o banco de dados (Neon). Verifique{" "}
-            <strong>DATABASE_URL</strong> na Vercel e faça um <strong>Redeploy</strong>.
+            O servidor não está a ver nenhuma connection string do Postgres (Neon). Na{" "}
+            <strong>Vercel</strong>: o projeto certo → <strong>Settings</strong> →{" "}
+            <strong>Environment Variables</strong> — deve existir <strong>DATABASE_URL</strong> ou{" "}
+            <strong>POSTGRES_URL</strong> (a integração Neon às vezes só cria depois de escolheres o projeto
+            Vercel no assistente do Neon). Depois: <strong>Redeploy</strong>.
           </div>
         ) : null}
 

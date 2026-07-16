@@ -1,0 +1,17 @@
+Vercel CLI 54.21.1 (Node.js 24.13.1)
+Retrieving project…
+Error: The specified token is not valid. Use `vercel login` to generate a new token.
+╭──────────────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│                     Update available! v54.21.1 ≫ v56.2.1                     │
+│   Changelog: https://github.com/vercel/vercel/releases/tag/vercel%4056.2.1   │
+│                     Run `npm i vercel@latest` to update.                     │
+│                                                                              │
+│             The latest update may fix any errors that occurred.              │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+npm notice
+npm notice New minor version of npm available! 11.8.0 -> 11.18.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.18.0
+npm notice To update run: npm install -g npm@11.18.0
+npm notice

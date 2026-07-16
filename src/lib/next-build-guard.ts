@@ -1,13 +1,9 @@
 /** Evita trabalho com DB durante `next build` (Vercel/Turbopack nem sempre exporta NEXT_PHASE/npm_lifecycle nos workers). */
 
+import { resolveDatabaseUrlFromEnv } from "../../prisma/datasource-env";
+
 function hasAnyDatabaseEnv(): boolean {
-  return Boolean(
-    process.env.DATABASE_URL ||
-      process.env.POSTGRES_URL ||
-      process.env.POSTGRES_PRISMA_URL ||
-      process.env.PRISMA_DATABASE_URL ||
-      process.env.NEON_DATABASE_URL,
-  );
+  return Boolean(resolveDatabaseUrlFromEnv());
 }
 
 function isArgvNextBuild(): boolean {

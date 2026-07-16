@@ -4,7 +4,7 @@ import { z } from "zod";
 
 const schema = z.object({
   jobId: z.string().uuid(),
-  status: z.enum(["EMITIDA", "ERRO"]),
+  status: z.enum(["EMITIDA", "LANCADO", "ERRO"]),
   nfseNumber: z.string().optional(),
   errorMessage: z.string().optional(),
 });
@@ -29,14 +29,15 @@ export async function POST(req: Request) {
   });
   if (!job) return NextResponse.json({ ok: false, message: "Job não encontrado." }, { status: 404 });
 
+  const sucesso = status === "EMITIDA" || status === "LANCADO";
   await prisma.$transaction([
     prisma.invoiceJob.update({
       where: { id: jobId },
-      data: { status: status === "EMITIDA" ? "CONCLUIDO" : "ERRO", lastError: status === "ERRO" ? errorMessage : null },
+      data: { status: sucesso ? "CONCLUIDO" : "ERRO", lastError: status === "ERRO" ? errorMessage : null },
     }),
     prisma.inspection.update({
       where: { id: job.inspectionId },
-      data: { status, nfseNumber: status === "EMITIDA" ? nfseNumber ?? null : null, errorMessage: status === "ERRO" ? errorMessage ?? "Erro" : null },
+      data: { status: sucesso ? "LANCADO" : status, nfseNumber: sucesso ? nfseNumber ?? null : null, errorMessage: status === "ERRO" ? errorMessage ?? "Erro" : null },
     }),
   ]);
 

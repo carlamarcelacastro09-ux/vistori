@@ -1,4 +1,5 @@
 import "dotenv/config";
+import fs from "node:fs";
 import { parse } from "csv-parse/sync";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client";
@@ -51,9 +52,9 @@ function pick(row: SheetRow, names: string[]) {
   return "";
 }
 
-function statusToInvoiceStatus(statusRaw: string, noteNumber: string): "AGUARDANDO" | "EMITIDA" | "ERRO" {
+function statusToInvoiceStatus(statusRaw: string, noteNumber: string): "AGUARDANDO" | "LANCADO" | "ERRO" {
   const n = normalizeText(noteNumber);
-  if (/\d+/.test(n)) return "EMITIDA";
+  if (/\d+/.test(n)) return "LANCADO";
 
   const s = normalizeText(statusRaw);
   if (s.includes("ERRO")) return "ERRO";
@@ -97,6 +98,7 @@ async function main() {
     let duplicated = 0;
     let updated = 0;
     let errors = 0;
+    const skippedRows: { row: number; plate: string; reasons: string[] }[] = [];
 
     for (let idx = 0; idx < rows.length; idx++) {
       const row = rows[idx];
@@ -115,21 +117,27 @@ async function main() {
       const statusRaw = pick(row, ["STATUS"]);
       const date = parseDate(pick(row, ["DATA"]));
 
-      const hasMinimum =
-        plate &&
-        customerDoc &&
-        customerName &&
-        street &&
-        number &&
-        district &&
-        city &&
-        cep.length === 8 &&
-        vehicleModel &&
-        vehicleBrand &&
-        paidValue > 0;
+      const targetDate = parseDate("20/06/2026");
+      const isTargetDateOrLater = date && targetDate && date.getTime() >= targetDate.getTime();
+      if (!isTargetDateOrLater) continue;
 
-      if (!hasMinimum) {
+      const reasons: string[] = [];
+      if (!plate) reasons.push("sem placa");
+      if (!customerDoc) reasons.push("sem CPF/CNPJ");
+      if (customerDoc && customerDoc.length < 11) reasons.push("CPF/CNPJ muito curto");
+      if (!customerName) reasons.push("sem cliente");
+      if (!street) reasons.push("sem rua");
+      if (!number) reasons.push("sem número");
+      if (!district) reasons.push("sem bairro");
+      if (!city) reasons.push("sem cidade");
+      if (cep.length !== 8) reasons.push("CEP inválido");
+      if (!vehicleModel) reasons.push("sem modelo");
+      if (!vehicleBrand) reasons.push("sem marca");
+      if (paidValue <= 0) reasons.push("valor pago inválido");
+
+      if (reasons.length > 0) {
         skipped += 1;
+        skippedRows.push({ row: idx + 1, plate: plate || "SEM PLACA", reasons });
         continue;
       }
 
@@ -195,28 +203,27 @@ async function main() {
         const invoiceStatus = statusToInvoiceStatus(statusRaw, noteNumber);
         const paidValueStr = paidValue.toFixed(2);
 
-        const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-        const end = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+        const start = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1);
+        const end = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 2);
 
         const exists = await prisma.inspection.findFirst({
           where: {
             date: { gte: start, lt: end },
-            customerId: customer.id,
-            vehicleId: vehicle.id,
-            paidValue: paidValueStr,
+            vehicle: { plate },
           },
-          select: { id: true, status: true, nfseNumber: true },
+          orderBy: { createdAt: "desc" },
+          select: { id: true, status: true, nfseNumber: true, date: true, paidValue: true },
         });
 
         if (exists) {
-          const shouldBeEmitted = invoiceStatus === "EMITIDA";
+          const shouldBeEmitted = invoiceStatus === "LANCADO";
           const hasNote = /\d+/.test(normalizeText(noteNumber));
-          const wasEmittedWithoutNote = exists.status === "EMITIDA" && !exists.nfseNumber;
+          const wasEmittedWithoutNote = (exists.status === "EMITIDA" || exists.status === "LANCADO") && !exists.nfseNumber;
 
           if (shouldBeEmitted && hasNote && exists.nfseNumber !== normalizeText(noteNumber)) {
             await prisma.inspection.update({
               where: { id: exists.id },
-              data: { status: "EMITIDA", nfseNumber: normalizeText(noteNumber), errorMessage: null },
+              data: { status: "LANCADO", nfseNumber: normalizeText(noteNumber), errorMessage: null },
             });
             await prisma.invoiceJob.updateMany({
               where: { inspectionId: exists.id },
@@ -251,7 +258,7 @@ async function main() {
             createdById: user.id,
             job: {
               create: {
-                status: invoiceStatus === "EMITIDA" ? "CONCLUIDO" : invoiceStatus === "ERRO" ? "ERRO" : "FILA",
+                status: invoiceStatus === "LANCADO" ? "CONCLUIDO" : invoiceStatus === "ERRO" ? "ERRO" : "FILA",
                 lastError: invoiceStatus === "ERRO" ? "Importado da planilha com status ERRO" : null,
               },
             },
@@ -273,6 +280,13 @@ async function main() {
     process.stdout.write(
       `Importação concluída. Importadas: ${imported}. Atualizadas: ${updated}. Duplicadas: ${duplicated}. Ignoradas: ${skipped}. Erros: ${errors}.\n`,
     );
+
+    if (skippedRows.length > 0) {
+      const lines = skippedRows.map((s) => `Linha ${s.row} | Placa: ${s.plate} | ${s.reasons.join(", ")}`);
+      const report = `--- Linhas ignoradas ---\n${lines.join("\n")}\n`;
+      process.stdout.write(`\n${report}`);
+      await fs.promises.writeFile("import-ignoradas.txt", report, "utf-8");
+    }
   } finally {
     await prisma.$disconnect();
   }

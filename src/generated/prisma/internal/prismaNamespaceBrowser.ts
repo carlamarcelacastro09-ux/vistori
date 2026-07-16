@@ -57,7 +57,8 @@ export const ModelName = {
   VehicleCatalog: 'VehicleCatalog',
   Street: 'Street',
   Inspection: 'Inspection',
-  InvoiceJob: 'InvoiceJob'
+  InvoiceJob: 'InvoiceJob',
+  AccountPayable: 'AccountPayable'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -170,6 +171,21 @@ export const InvoiceJobScalarFieldEnum = {
 } as const
 
 export type InvoiceJobScalarFieldEnum = (typeof InvoiceJobScalarFieldEnum)[keyof typeof InvoiceJobScalarFieldEnum]
+
+
+export const AccountPayableScalarFieldEnum = {
+  id: 'id',
+  description: 'description',
+  amount: 'amount',
+  dueDate: 'dueDate',
+  status: 'status',
+  category: 'category',
+  paidAt: 'paidAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AccountPayableScalarFieldEnum = (typeof AccountPayableScalarFieldEnum)[keyof typeof AccountPayableScalarFieldEnum]
 
 
 export const SortOrder = {

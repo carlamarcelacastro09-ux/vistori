@@ -1,0 +1,19 @@
+--- Linhas ignoradas ---
+Linha 10 | Placa: CSZ0125 | valor pago inválido
+Linha 11 | Placa: BSN5H78 | valor pago inválido
+Linha 12 | Placa: BKD0114 | sem rua, sem número
+Linha 19 | Placa: CHD8A97 | valor pago inválido
+Linha 30 | Placa: BVC5D32 | sem rua, sem número, sem bairro
+Linha 31 | Placa: EQK3E17 | sem rua, sem número, sem bairro
+Linha 37 | Placa: UDM7A70 | valor pago inválido
+Linha 39 | Placa: CHD8A97 | valor pago inválido
+Linha 41 | Placa: CLZ9B80 | valor pago inválido
+Linha 49 | Placa: SYZ4G16 | valor pago inválido
+Linha 53 | Placa: TJZC30 | sem rua, sem número, sem bairro, sem cidade, CEP inválido, valor pago inválido
+Linha 55 | Placa: UAI6D63 | sem rua, sem número, sem bairro, sem cidade, CEP inválido, valor pago inválido
+Linha 59 | Placa: SIV2J47 | sem rua, sem número, sem bairro, sem cidade, CEP inválido, valor pago inválido
+Linha 60 | Placa: FFM9B28 | CEP inválido
+Linha 62 | Placa: TCG2D47 | sem rua, sem número, sem bairro, sem cidade, CEP inválido, valor pago inválido
+Linha 63 | Placa: CYL6935 | CEP inválido
+Linha 68 | Placa: TLU2E97 | sem rua, sem número, sem bairro, sem cidade, CEP inválido
+Linha 69 | Placa: FGS4215 | sem rua, sem número, sem bairro, sem cidade, CEP inválido

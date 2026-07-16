@@ -15,6 +15,7 @@ enum UserRole {
 enum InvoiceStatus {
   AGUARDANDO
   EMITIDA
+  LANCADO
   ERRO
 }
 
@@ -24,6 +25,12 @@ enum InvoiceJobStatus {
   CONCLUIDO
   ERRO
 }
+
+enum AccountPayableStatus {
+  PENDENTE
+  PAGO
+}
+
 
 model User {
   id           String   @id @default(uuid())
@@ -131,4 +138,19 @@ model InvoiceJob {
   inspection   Inspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
 
   @@index([status])
+}
+
+model AccountPayable {
+  id          String               @id @default(uuid())
+  description String
+  amount      Decimal              @db.Decimal(12, 2)
+  dueDate     DateTime             @db.Date
+  status      AccountPayableStatus @default(PENDENTE)
+  category    String?
+  paidAt      DateTime?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  @@index([status])
+  @@index([dueDate])
 }

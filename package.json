@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma db push && next build",
+    "build": "prisma generate && npx tsx scripts/prisma-push-if-env.ts && next build",
     "start": "next start",
     "lint": "eslint",
     "db:generate": "prisma generate",
@@ -17,14 +17,17 @@
     "db:report:sheets": "tsx src/scripts/report-missing-from-sheets.ts",
     "db:cleanup:streets": "tsx src/scripts/cleanup-streets.ts",
     "robot:run": "tsx src/robot/worker.ts",
-    "robot:once": "cross-env ROBOT_RUN_ONCE=1 tsx src/robot/worker.ts"
+    "robot:once": "cross-env ROBOT_RUN_ONCE=1 ROBOT_HEADLESS=0 tsx src/robot/worker.ts"
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.1030.0",
+    "@hookform/resolvers": "^5.4.0",
     "@prisma/adapter-pg": "^7.7.0",
     "@prisma/client": "^7.7.0",
+    "@vercel/analytics": "^2.0.1",
     "bcryptjs": "^3.0.3",
     "csv-parse": "^6.2.1",
+    "dotenv": "^16.4.7",
     "iron-session": "^8.0.4",
     "next": "16.2.4",
     "pg": "^8.20.0",
@@ -32,7 +35,10 @@
     "prisma": "^7.7.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "zod": "^4.3.6"
+    "react-hook-form": "^7.81.0",
+    "react-select": "^5.10.2",
+    "tsx": "^4.21.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -41,7 +47,7 @@
     "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
-    "tsx": "^4.21.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vercel": "^54.21.1"
   }
 }

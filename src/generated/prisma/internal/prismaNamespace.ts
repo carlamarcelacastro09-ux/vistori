@@ -390,7 +390,8 @@ export const ModelName = {
   VehicleCatalog: 'VehicleCatalog',
   Street: 'Street',
   Inspection: 'Inspection',
-  InvoiceJob: 'InvoiceJob'
+  InvoiceJob: 'InvoiceJob',
+  AccountPayable: 'AccountPayable'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -406,7 +407,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "customer" | "vehicle" | "vehicleCatalog" | "street" | "inspection" | "invoiceJob"
+    modelProps: "user" | "customer" | "vehicle" | "vehicleCatalog" | "street" | "inspection" | "invoiceJob" | "accountPayable"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -928,6 +929,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AccountPayable: {
+      payload: Prisma.$AccountPayablePayload<ExtArgs>
+      fields: Prisma.AccountPayableFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AccountPayableFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountPayablePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AccountPayableFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountPayablePayload>
+        }
+        findFirst: {
+          args: Prisma.AccountPayableFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountPayablePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AccountPayableFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountPayablePayload>
+        }
+        findMany: {
+          args: Prisma.AccountPayableFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountPayablePayload>[]
+        }
+        create: {
+          args: Prisma.AccountPayableCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountPayablePayload>
+        }
+        createMany: {
+          args: Prisma.AccountPayableCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AccountPayableCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountPayablePayload>[]
+        }
+        delete: {
+          args: Prisma.AccountPayableDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountPayablePayload>
+        }
+        update: {
+          args: Prisma.AccountPayableUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountPayablePayload>
+        }
+        deleteMany: {
+          args: Prisma.AccountPayableDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AccountPayableUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AccountPayableUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountPayablePayload>[]
+        }
+        upsert: {
+          args: Prisma.AccountPayableUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountPayablePayload>
+        }
+        aggregate: {
+          args: Prisma.AccountPayableAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAccountPayable>
+        }
+        groupBy: {
+          args: Prisma.AccountPayableGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AccountPayableGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AccountPayableCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AccountPayableCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1063,6 +1138,21 @@ export const InvoiceJobScalarFieldEnum = {
 export type InvoiceJobScalarFieldEnum = (typeof InvoiceJobScalarFieldEnum)[keyof typeof InvoiceJobScalarFieldEnum]
 
 
+export const AccountPayableScalarFieldEnum = {
+  id: 'id',
+  description: 'description',
+  amount: 'amount',
+  dueDate: 'dueDate',
+  status: 'status',
+  category: 'category',
+  paidAt: 'paidAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AccountPayableScalarFieldEnum = (typeof AccountPayableScalarFieldEnum)[keyof typeof AccountPayableScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1192,6 +1282,20 @@ export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
 
 
 /**
+ * Reference to a field of type 'AccountPayableStatus'
+ */
+export type EnumAccountPayableStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AccountPayableStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'AccountPayableStatus[]'
+ */
+export type ListEnumAccountPayableStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AccountPayableStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -1306,6 +1410,7 @@ export type GlobalOmitConfig = {
   street?: Prisma.StreetOmit
   inspection?: Prisma.InspectionOmit
   invoiceJob?: Prisma.InvoiceJobOmit
+  accountPayable?: Prisma.AccountPayableOmit
 }
 
 /* Types for Logging */

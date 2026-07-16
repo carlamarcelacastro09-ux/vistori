@@ -76,3 +76,8 @@ export type Inspection = Prisma.InspectionModel
  * 
  */
 export type InvoiceJob = Prisma.InvoiceJobModel
+/**
+ * Model AccountPayable
+ * 
+ */
+export type AccountPayable = Prisma.AccountPayableModel

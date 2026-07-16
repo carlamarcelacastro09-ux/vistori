@@ -20,6 +20,7 @@ export type UserRole = (typeof UserRole)[keyof typeof UserRole]
 export const InvoiceStatus = {
   AGUARDANDO: 'AGUARDANDO',
   EMITIDA: 'EMITIDA',
+  LANCADO: 'LANCADO',
   ERRO: 'ERRO'
 } as const
 
@@ -34,3 +35,11 @@ export const InvoiceJobStatus = {
 } as const
 
 export type InvoiceJobStatus = (typeof InvoiceJobStatus)[keyof typeof InvoiceJobStatus]
+
+
+export const AccountPayableStatus = {
+  PENDENTE: 'PENDENTE',
+  PAGO: 'PAGO'
+} as const
+
+export type AccountPayableStatus = (typeof AccountPayableStatus)[keyof typeof AccountPayableStatus]
