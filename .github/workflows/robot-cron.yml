@@ -33,5 +33,5 @@ jobs:
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
-      - name: Run robot once
-        run: npm run robot:once
+      - name: Run robot (all pending notes)
+        run: npm run robot:run
