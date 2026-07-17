@@ -80,6 +80,16 @@ export async function POST(req: Request) {
       data: { status: "PROCESSANDO", attempts: { increment: 1 } },
     });
 
+    const lastNfse = await prisma.inspection.findFirst({
+      where: {
+        customer: { doc: insp.customer.doc },
+        nfseNumber: { not: null },
+        id: { not: insp.id },
+      },
+      orderBy: { date: "desc" },
+      select: { nfseNumber: true },
+    });
+
     return NextResponse.json({
       ok: true,
       job: {
@@ -97,6 +107,7 @@ export async function POST(req: Request) {
         number: insp.customer.number,
         district: insp.customer.district,
         city: insp.customer.city,
+        lastNfseNumber: lastNfse?.nfseNumber ?? null,
       },
     });
   }

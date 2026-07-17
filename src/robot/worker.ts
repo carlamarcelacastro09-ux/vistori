@@ -22,6 +22,7 @@ type NextJobResponse =
         number: string;
         district: string;
         city: string;
+        lastNfseNumber: string | null;
       };
     };
 
@@ -607,15 +608,17 @@ async function runSession(singleJob: boolean) {
         break;
       }
 
-      try {
-        let numero = await processarNota(page, next.job, lastNumber);
+      const sessionLastNumber: string | null = lastNumber ?? next.job.lastNfseNumber;
 
-        if (lastNumber && numero === lastNumber) {
+      try {
+        let numero = await processarNota(page, next.job, sessionLastNumber);
+
+        if (sessionLastNumber && numero === sessionLastNumber) {
           log(`AVISO: número ${numero} igual ao anterior. Recarregando e tentando novamente.`);
           await page.goto(emissaoUrl, { waitUntil: "domcontentloaded", timeout: 30000 }).catch(() => {});
           await sleep(5000);
           numero = await processarNota(page, next.job, null);
-          if (numero === lastNumber) {
+          if (numero === sessionLastNumber) {
             throw new Error(`Número da nota repetido (${numero}). Portal pode estar em estado inconsistente.`);
           }
         }
