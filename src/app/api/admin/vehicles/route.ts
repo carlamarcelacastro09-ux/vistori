@@ -51,10 +51,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, message: "Verifique placa, marca e modelo." }, { status: 400 });
   }
 
-  const v = await prisma.vehicle.upsert({
-    where: { plate: parsed.data.plate },
-    create: parsed.data,
-    update: { brand: parsed.data.brand, model: parsed.data.model },
+  const v = await prisma.vehicle.create({
+    data: parsed.data,
     select: { id: true, plate: true, brand: true, model: true, updatedAt: true },
   });
 

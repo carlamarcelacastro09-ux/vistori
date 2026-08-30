@@ -181,14 +181,9 @@ async function main() {
           update: {},
         });
 
-        const vehicle = await prisma.vehicle.upsert({
-          where: { plate },
-          create: {
+        const vehicle = await prisma.vehicle.create({
+          data: {
             plate,
-            model: vehicleModel,
-            brand: vehicleBrand,
-          },
-          update: {
             model: vehicleModel,
             brand: vehicleBrand,
           },

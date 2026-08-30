@@ -83,10 +83,8 @@ export async function POST(req: Request) {
     update: {},
   });
 
-  const vehicle = await prisma.vehicle.upsert({
-    where: { plate: data.plate },
-    create: { plate: data.plate, brand: data.vehicleBrand, model: data.vehicleModel },
-    update: { brand: data.vehicleBrand, model: data.vehicleModel },
+  const vehicle = await prisma.vehicle.create({
+    data: { plate: data.plate, brand: data.vehicleBrand, model: data.vehicleModel },
   });
 
   await prisma.vehicleCatalog.upsert({
