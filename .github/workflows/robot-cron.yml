@@ -12,11 +12,16 @@ jobs:
     env:
       APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
       ROBOT_API_KEY: ${{ secrets.ROBOT_API_KEY }}
-      PREFEITURA_LOGIN_URL: ${{ secrets.PREFEITURA_LOGIN_URL }}
-      PREFEITURA_EMISSAO_URL: ${{ secrets.PREFEITURA_EMISSAO_URL }}
-      PREFEITURA_USERNAME: ${{ secrets.PREFEITURA_USERNAME }}
-      PREFEITURA_PASSWORD: ${{ secrets.PREFEITURA_PASSWORD }}
-      PREFEITURA_CNPJ: ${{ secrets.PREFEITURA_CNPJ }}
+      EMITENTE_CNPJ: ${{ secrets.EMITENTE_CNPJ }}
+      EMITENTE_COD_MUNICIPIO: ${{ secrets.EMITENTE_COD_MUNICIPIO }}
+      EMITENTE_INSCRICAO_MUNICIPAL: ${{ secrets.EMITENTE_INSCRICAO_MUNICIPAL }}
+      CERT_PFX_BASE64: ${{ secrets.CERT_PFX_BASE64 }}
+      CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
+      NFSE_AMBIENTE: ${{ secrets.NFSE_AMBIENTE }}
+      NFSE_SERIE: ${{ secrets.NFSE_SERIE }}
+      NFSE_CODIGO_SERVICO: ${{ secrets.NFSE_CODIGO_SERVICO }}
+      NFSE_ALIQ_ISS: ${{ secrets.NFSE_ALIQ_ISS }}
+      NFSE_PTOTTRIBSN: ${{ secrets.NFSE_PTOTTRIBSN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,9 +34,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
 
       - name: Run robot (all pending notes)
         run: npm run robot:run

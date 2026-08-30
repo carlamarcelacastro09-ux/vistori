@@ -39,18 +39,36 @@ Cadastre os secrets no GitHub:
 `SHEETS_CSV_URL` precisa ser um link CSV da aba ATENDIMENTO, por exemplo:
 `https://docs.google.com/spreadsheets/d/SEU_ID/export?format=csv&gid=1111079458`
 
-## 5) Robô automático (banco → prefeitura)
+## 5) Robô automático (banco → NFS-e Nacional)
 
 O workflow **Robot Cron** roda sozinho a cada 10 minutos e também pode ser executado manualmente.
+O robô emite NFS-e via API SEFIN Nacional (nfse.gov.br), usando certificado digital A1.
 
 Cadastre os secrets no GitHub:
 - `APP_BASE_URL` = a URL publicada do Vercel (ex.: `https://seu-projeto.vercel.app`)
 - `ROBOT_API_KEY` = a mesma do Vercel
-- `PREFEITURA_LOGIN_URL`
-- `PREFEITURA_EMISSAO_URL` (opcional)
-- `PREFEITURA_USERNAME`
-- `PREFEITURA_PASSWORD`
-- `PREFEITURA_CNPJ`
+- `EMITENTE_CNPJ` = CNPJ do emitente (só dígitos)
+- `EMITENTE_COD_MUNICIPIO` = código IBGE do município (7 dígitos, ex.: `3540903` para Pradópolis)
+- `EMITENTE_INSCRICAO_MUNICIPAL` = inscrição municipal (opcional)
+- `CERT_PFX_BASE64` = conteúdo do certificado .pfx codificado em base64 (veja abaixo)
+- `CERT_PASSWORD` = senha do certificado digital
+- `NFSE_AMBIENTE` = `producao` ou `homologacao` (padrão: `producao`)
+- `NFSE_SERIE` = série da NFS-e (padrão: `NFSE`)
+- `NFSE_CODIGO_SERVICO` = código tributação nacional (padrão: `010501`)
+- `NFSE_ALIQ_ISS` = alíquota ISS em % (ex.: `2.0`). Se `0`, não envia alíquota.
+- `NFSE_PTOTTRIBSN` = % total tributos Simples Nacional (padrão: `6.0`)
+
+### Como gerar o CERT_PFX_BASE64
+
+```bash
+# Linux/macOS
+base64 -w 0 certificado.pfx > cert_base64.txt
+
+# PowerShell (Windows)
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("certificado.pfx")) | Set-Content cert_base64.txt
+```
+
+Copie o conteúdo de `cert_base64.txt` e cole no secret `CERT_PFX_BASE64` do GitHub.
 
 ## 5.1) Botão “Rodar agora” dentro do sistema (opcional, recomendado)
 
