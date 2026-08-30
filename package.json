@@ -40,6 +40,11 @@
     "tsx": "^4.21.0",
     "zod": "^4.4.3"
   },
+  "overrides": {
+    "open-nfse": {
+      "undici": "6.21.3"
+    }
+  },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^19",
