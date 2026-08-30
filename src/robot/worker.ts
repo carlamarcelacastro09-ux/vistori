@@ -124,9 +124,11 @@ async function createNfseClient() {
   };
 }
 
-async function emitirNota(cliente: NfseClient, tpAmb: TipoAmbienteDps, job: Job): Promise<string> {
+const CEP_FALLBACK = "14850037";
+
+async function emitirNota(cliente: NfseClient, tpAmb: TipoAmbienteDps, job: Job, useFallbackCep = false): Promise<string> {
   const docLimpo = onlyDigits(job.customerDoc);
-  const cepLimpo = onlyDigits(job.cep);
+  const cepLimpo = useFallbackCep ? CEP_FALLBACK : onlyDigits(job.cep);
 
   if (!docLimpo) throw new Error("Sem documento válido (CPF/CNPJ).");
 
@@ -267,6 +269,26 @@ async function runSession(singleJob: boolean) {
 
         if (singleJob) break;
       } catch (e) {
+        // Se erro E0240 (CEP inválido), retentar com CEP padrão
+        if (e instanceof ReceitaRejectionError && e.codigo === "E0240") {
+          log(`CEP inválido (${next.job.cep}). Retentando com CEP padrão ${CEP_FALLBACK}...`);
+          try {
+            const numero = await emitirNota(cliente, tpAmb, next.job, true);
+            await updateJob({ jobId: next.job.jobId, status: "LANCADO", nfseNumber: numero });
+            process.stdout.write(`Job ${next.job.jobId} concluído (CEP fallback). Nota ${numero}.\n`);
+            if (singleJob) break;
+            continue;
+          } catch (e2) {
+            const msg2 = e2 instanceof ReceitaRejectionError
+              ? `Rejeitada pela SEFIN: [${e2.codigo}] ${e2.descricao}`
+              : (e2 instanceof Error ? e2.message : String(e2));
+            await updateJob({ jobId: next.job.jobId, status: "ERRO", errorMessage: msg2.slice(0, 500) });
+            process.stderr.write(`Job ${next.job.jobId} falhou (CEP fallback): ${msg2.split("\n")[0].slice(0, 200)}\n`);
+            if (singleJob) break;
+            continue;
+          }
+        }
+
         let msg: string;
         if (e instanceof ReceitaRejectionError) {
           msg = `Rejeitada pela SEFIN: [${e.codigo}] ${e.descricao}`;
