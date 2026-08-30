@@ -43,3 +43,16 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     );
   }
 }
+
+export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const gate = await requireAdminSession();
+  if (!gate.ok) return gate.res;
+
+  const { id } = await ctx.params;
+  try {
+    await prisma.street.delete({ where: { id } });
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ ok: false, message: "Não foi possível excluir." }, { status: 400 });
+  }
+}

@@ -451,6 +451,21 @@ function RuasTab() {
     setCep(formatCep(s.cep));
   }
 
+  async function onDelete(s: StreetRow) {
+    if (!confirm(`Excluir rua "${s.street}" (${formatCep(s.cep)})?`)) return;
+    const res = await fetch(`/api/admin/streets/${s.id}`, { method: "DELETE" }).catch(() => null);
+    if (!res || !res.ok) {
+      const d = await res?.json().catch(() => null);
+      setError((d as { message?: string })?.message ?? "Não foi possível excluir.");
+      return;
+    }
+    if (edit?.id === s.id) {
+      setEdit(null);
+      resetForm();
+    }
+    await load();
+  }
+
   return (
     <div className="row g-4">
       <div className="col-lg-4">
@@ -554,9 +569,14 @@ function RuasTab() {
                         <td>{s.district}</td>
                         <td>{s.city}</td>
                         <td className="text-end">
-                          <button className="btn btn-sm btn-outline-primary" type="button" onClick={() => openEdit(s)}>
-                            Editar
-                          </button>
+                          <div className="d-flex gap-1 justify-content-end">
+                            <button className="btn btn-sm btn-outline-primary" type="button" onClick={() => openEdit(s)}>
+                              Editar
+                            </button>
+                            <button className="btn btn-sm btn-outline-danger" type="button" onClick={() => onDelete(s)}>
+                              <i className="bi bi-trash" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
