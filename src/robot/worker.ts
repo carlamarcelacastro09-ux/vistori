@@ -80,6 +80,13 @@ function loadCertificate(): { pfx: Buffer; password: string } {
 }
 
 async function fetchLastDpsNumber(): Promise<number> {
+  // Tenta via env override primeiro (para quando a API ainda não está disponível)
+  const envOverride = process.env.NFSE_LAST_DPS;
+  if (envOverride) {
+    const n = parseInt(envOverride, 10);
+    if (n > 0) return n;
+  }
+
   const baseUrl = requiredEnv("APP_BASE_URL").replace(/\/+$/, "");
   const apiKey = requiredEnv("ROBOT_API_KEY");
   try {
@@ -103,13 +110,14 @@ async function createNfseClient() {
   const ambiente = isProducao ? Ambiente.Producao : Ambiente.ProducaoRestrita;
 
   const lastDps = await fetchLastDpsNumber();
-  log(`Último nDPS no banco: ${lastDps}. Próximo: ${lastDps + 1}`);
+  const nextDps = lastDps + 1;
+  log(`Último nDPS no banco: ${lastDps}. Próximo: ${nextDps}`);
 
   return {
     client: new NfseClient({
       ambiente,
       certificado: cert,
-      dpsCounter: createInMemoryDpsCounter(lastDps),
+      dpsCounter: createInMemoryDpsCounter(nextDps),
       retryStore: createInMemoryRetryStore(),
     }),
     tpAmb: isProducao ? TipoAmbienteDps.Producao : TipoAmbienteDps.Homologacao,
