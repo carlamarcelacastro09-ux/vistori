@@ -79,17 +79,37 @@ function loadCertificate(): { pfx: Buffer; password: string } {
   throw new Error("Configure CERT_PFX_PATH (caminho do .pfx) ou CERT_PFX_BASE64 (conteúdo em base64).");
 }
 
-function createNfseClient() {
+async function fetchLastDpsNumber(): Promise<number> {
+  const baseUrl = requiredEnv("APP_BASE_URL").replace(/\/+$/, "");
+  const apiKey = requiredEnv("ROBOT_API_KEY");
+  try {
+    const res = await fetch(`${baseUrl}/api/robot/last-nfse`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-api-key": apiKey },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const n = parseInt(data.lastNumber || "0", 10);
+      if (n > 0) return n;
+    }
+  } catch {}
+  return 0;
+}
+
+async function createNfseClient() {
   const cert = loadCertificate();
   const ambienteStr = envOr("NFSE_AMBIENTE", "producao").toLowerCase();
   const isProducao = ambienteStr === "producao";
   const ambiente = isProducao ? Ambiente.Producao : Ambiente.ProducaoRestrita;
 
+  const lastDps = await fetchLastDpsNumber();
+  log(`Último nDPS no banco: ${lastDps}. Próximo: ${lastDps + 1}`);
+
   return {
     client: new NfseClient({
       ambiente,
       certificado: cert,
-      dpsCounter: createInMemoryDpsCounter(),
+      dpsCounter: createInMemoryDpsCounter(lastDps),
       retryStore: createInMemoryRetryStore(),
     }),
     tpAmb: isProducao ? TipoAmbienteDps.Producao : TipoAmbienteDps.Homologacao,
@@ -221,7 +241,7 @@ async function updateJob(input: { jobId: string; status: "EMITIDA" | "LANCADO" |
 
 async function runSession(singleJob: boolean) {
   log("Inicializando cliente NFS-e Nacional (API SEFIN)...");
-  const { client: cliente, tpAmb } = createNfseClient();
+  const { client: cliente, tpAmb } = await createNfseClient();
 
   try {
     for (;;) {
