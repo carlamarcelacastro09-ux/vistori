@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { createInspectionSchema } from "@/lib/validation";
 import { enqueueInvoiceJob } from "@/lib/sqs";
 import { cityKey } from "@/lib/normalize";
+import { upsertVehicleByPlate } from "@/lib/vehicle";
 
 export async function GET() {
   const session = await getSession();
@@ -40,8 +42,18 @@ export async function POST(req: Request) {
     );
   }
 
-  const data = parsed.data;
+  try {
+    return await createInspection(parsed.data, session.user.id);
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    return NextResponse.json(
+      { ok: false, message: `Erro ao salvar a vistoria: ${message}` },
+      { status: 500 },
+    );
+  }
+}
 
+async function createInspection(data: z.infer<typeof createInspectionSchema>, userId: string) {
   const city = cityKey(data.city);
 
   const customer = await prisma.customer.upsert({
@@ -83,19 +95,11 @@ export async function POST(req: Request) {
     update: {},
   });
 
-  let vehicle = await prisma.vehicle.findFirst({
-    where: { plate: data.plate },
+  const vehicle = await upsertVehicleByPlate({
+    plate: data.plate,
+    brand: data.vehicleBrand,
+    model: data.vehicleModel,
   });
-  if (vehicle) {
-    vehicle = await prisma.vehicle.update({
-      where: { id: vehicle.id },
-      data: { brand: data.vehicleBrand, model: data.vehicleModel },
-    });
-  } else {
-    vehicle = await prisma.vehicle.create({
-      data: { plate: data.plate, brand: data.vehicleBrand, model: data.vehicleModel },
-    });
-  }
 
   await prisma.vehicleCatalog.upsert({
     where: { model: data.vehicleModel },
@@ -113,7 +117,7 @@ export async function POST(req: Request) {
       noteValue: noteValueStr,
       customerId: customer.id,
       vehicleId: vehicle.id,
-      createdById: session.user.id,
+      createdById: userId,
       status: "AGUARDANDO",
       job: {
         create: {
@@ -125,7 +129,7 @@ export async function POST(req: Request) {
   });
 
   if (inspection.job) {
-    await enqueueInvoiceJob({ jobId: inspection.job.id });
+    await enqueueInvoiceJob({ jobId: inspection.job.id }).catch(() => {});
   }
 
   return NextResponse.json({ ok: true, inspectionId: inspection.id });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Select from "react-select";
@@ -155,6 +155,22 @@ const schema = z
 
 type FormData = z.infer<typeof schema>;
 
+const validateOnSet = { shouldValidate: true, shouldDirty: true } as const;
+
+const FIELD_LABELS: Record<string, string> = {
+  paidValue: "Valor pago",
+  plate: "Placa",
+  vehicleModel: "Modelo",
+  vehicleBrand: "Marca",
+  customerDoc: "CPF/CNPJ",
+  customerName: "Nome",
+  customCity: "Cidade",
+  cep: "CEP",
+  street: "Rua",
+  number: "Número",
+  district: "Bairro",
+};
+
 export default function NewInspectionForm() {
   const {
     register,
@@ -163,7 +179,7 @@ export default function NewInspectionForm() {
     setValue,
     reset,
     trigger,
-    formState: { errors, isSubmitting, isValid },
+    formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -215,9 +231,9 @@ export default function NewInspectionForm() {
 
       setHasRecentInspection(!!data.hasRecentInspection);
       if (data.hasRecentInspection) {
-        setValue("paidValue", "1,00");
+        setValue("paidValue", "1,00", validateOnSet);
       } else if (watched.paidValue === "1,00") {
-        setValue("paidValue", "25,00");
+        setValue("paidValue", "25,00", validateOnSet);
       }
     }, 600);
 
@@ -257,9 +273,9 @@ export default function NewInspectionForm() {
   }, [streetQuery, isPradopolis]);
 
   function selectStreet(item: StreetItem) {
-    setValue("street", item.street.toUpperCase());
-    setValue("cep", onlyDigits(item.cep));
-    setValue("district", item.district.toUpperCase());
+    setValue("street", item.street.toUpperCase(), validateOnSet);
+    setValue("cep", onlyDigits(item.cep), validateOnSet);
+    setValue("district", item.district.toUpperCase(), validateOnSet);
     setStreetOpen(false);
     setStreetQuery("");
     trigger(["street", "cep", "district"]);
@@ -279,22 +295,22 @@ export default function NewInspectionForm() {
       | null;
 
     if (data?.customer) {
-      setValue("customerName", (data.customer.name || "").toUpperCase());
+      setValue("customerName", (data.customer.name || "").toUpperCase(), validateOnSet);
       const cCity = (data.customer.city || "").toUpperCase();
 
       // Tenta mapear cidade do cadastro para o select
       const mapped = CITY_OPTIONS.find((c) => c.value === cCity || c.value.replace(/_/g, " ") === cCity);
       if (mapped) {
-        setValue("cityMode", mapped.value as CityMode);
+        setValue("cityMode", mapped.value as CityMode, validateOnSet);
       } else {
-        setValue("cityMode", "OUTROS");
-        setValue("customCity", cCity);
+        setValue("cityMode", "OUTROS", validateOnSet);
+        setValue("customCity", cCity, validateOnSet);
       }
 
-      setValue("cep", onlyDigits(data.customer.cep || ""));
-      setValue("street", (data.customer.street || "").toUpperCase());
-      setValue("number", (data.customer.number || "").toUpperCase());
-      setValue("district", (data.customer.district || "").toUpperCase());
+      setValue("cep", onlyDigits(data.customer.cep || ""), validateOnSet);
+      setValue("street", (data.customer.street || "").toUpperCase(), validateOnSet);
+      setValue("number", (data.customer.number || "").toUpperCase(), validateOnSet);
+      setValue("district", (data.customer.district || "").toUpperCase(), validateOnSet);
       trigger();
       showToast("Cliente encontrado e dados preenchidos.", "success");
       return;
@@ -315,8 +331,13 @@ export default function NewInspectionForm() {
     const data = (await res.json().catch(() => null)) as { ok?: boolean; vehicle?: { model: string; brand: string } | null } | null;
 
     if (data?.vehicle?.brand) {
-      setValue("vehicleBrand", data.vehicle.brand.toUpperCase());
+      setValue("vehicleBrand", data.vehicle.brand.toUpperCase(), validateOnSet);
     }
+  }
+
+  function onInvalid(formErrors: FieldErrors<FormData>) {
+    const missing = Object.keys(formErrors).map((key) => FIELD_LABELS[key] ?? key);
+    showToast(`Faltam dados obrigatórios: ${missing.join(", ")}.`, "error");
   }
 
   async function onSubmit(data: FormData) {
@@ -472,7 +493,7 @@ export default function NewInspectionForm() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
         <div className="d-flex flex-column gap-4">
           {/* Veículo */}
           {sectionCard(
@@ -543,7 +564,7 @@ export default function NewInspectionForm() {
                     <input
                       {...register("customerDoc")}
                       className={`form-control border-start-0 ps-0 ${errors.customerDoc ? "is-invalid" : ""}`}
-                      onChange={(e) => setValue("customerDoc", formatCpfCnpj(e.target.value))}
+                      onChange={(e) => setValue("customerDoc", formatCpfCnpj(e.target.value), validateOnSet)}
                       onBlur={() => lookupCustomer()}
                       placeholder="CPF ou CNPJ"
                     />
@@ -578,7 +599,7 @@ export default function NewInspectionForm() {
                     value={CITY_OPTIONS.find((c) => c.value === cityMode)}
                     onChange={(opt) => {
                       const value = (opt?.value as CityMode) || "PRADOPOLIS";
-                      setValue("cityMode", value);
+                      setValue("cityMode", value, validateOnSet);
                       setValue("street", "");
                       setValue("cep", "");
                       setValue("district", "");
@@ -624,7 +645,7 @@ export default function NewInspectionForm() {
                       disabled={!isPradopolis && cityMode !== "OUTROS" && !actualCity}
                       onChange={(e) => {
                         const v = e.target.value.toUpperCase();
-                        setValue("street", v);
+                        setValue("street", v, validateOnSet);
                         if (isPradopolis) {
                           setStreetQuery(v);
                           setStreetOpen(true);
@@ -710,7 +731,7 @@ export default function NewInspectionForm() {
             <i className="bi bi-trash me-2" />
             Limpar
           </button>
-          <button className="btn btn-danger flex-grow-1 py-2" type="submit" disabled={isSubmitting || !isValid}>
+          <button className="btn btn-danger flex-grow-1 py-2" type="submit" disabled={isSubmitting}>
             {isSubmitting ? (
               <>
                 <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
