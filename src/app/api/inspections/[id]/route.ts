@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
 import { updateInspectionSchema } from "@/lib/validation";
 import { cityKey } from "@/lib/normalize";
+import { upsertVehicleByPlate } from "@/lib/vehicle";
 
 export const dynamic = "force-dynamic";
 
@@ -87,10 +88,10 @@ export async function PATCH(request: NextRequest, { params }: Params) {
           { status: 400 },
         );
       }
-      const vehicle = await prisma.vehicle.upsert({
-        where: { plate: data.plate },
-        create: { plate: data.plate, brand: data.vehicleBrand, model: data.vehicleModel },
-        update: { brand: data.vehicleBrand, model: data.vehicleModel },
+      const vehicle = await upsertVehicleByPlate({
+        plate: data.plate,
+        brand: data.vehicleBrand,
+        model: data.vehicleModel,
       });
       vehicleId = vehicle.id;
 
