@@ -16,6 +16,7 @@
     "db:import:master": "tsx src/scripts/import-master-data.ts",
     "db:report:sheets": "tsx src/scripts/report-missing-from-sheets.ts",
     "db:cleanup:streets": "tsx src/scripts/cleanup-streets.ts",
+    "db:limpar:duplicados": "tsx src/scripts/limpar-duplicados.ts",
     "robot:run": "tsx src/robot/worker.ts",
     "robot:once": "cross-env ROBOT_RUN_ONCE=1 tsx src/robot/worker.ts"
   },
