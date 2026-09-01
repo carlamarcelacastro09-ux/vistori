@@ -194,3 +194,32 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     return NextResponse.json({ ok: false, message }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest, { params }: Params) {
+  try {
+    const session = await getSession();
+    if (!session.user) {
+      return NextResponse.json({ ok: false, message: "Não autorizado." }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    const existing = await prisma.inspection.findUnique({
+      where: { id },
+      include: { job: true },
+    });
+    if (!existing) {
+      return NextResponse.json({ ok: false, message: "Vistoria não encontrada." }, { status: 404 });
+    }
+
+    await prisma.$transaction([
+      prisma.invoiceJob.deleteMany({ where: { inspectionId: id } }),
+      prisma.inspection.delete({ where: { id } }),
+    ]);
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Erro interno";
+    return NextResponse.json({ ok: false, message }, { status: 500 });
+  }
+}

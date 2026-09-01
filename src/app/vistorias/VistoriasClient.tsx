@@ -73,6 +73,7 @@ export default function VistoriasClient({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState("");
   const [editingSaving, setEditingSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     date: "",
@@ -296,6 +297,25 @@ export default function VistoriasClient({
     setFormSaving(false);
   }
 
+  async function handleDelete(id: string) {
+    if (!confirm("Tem certeza que deseja excluir esta vistoria?")) return;
+    setDeletingId(id);
+
+    const res = await fetch(`/api/inspections/${id}`, {
+      method: "DELETE",
+    }).catch(() => null);
+
+    const response = await res?.json().catch(() => null);
+    if (!res || !res.ok) {
+      setDeletingId(null);
+      alert(response?.message ?? "Erro ao excluir vistoria.");
+      return;
+    }
+
+    setData((prev) => prev.filter((r) => r.id !== id));
+    setDeletingId(null);
+  }
+
   function exportCSV() {
     const header = ["Data", "Placa", "Marca", "Modelo", "Cliente", "CPF/CNPJ", "Valor", "Status", "Nº Nota / Erro", "CEP", "Rua", "Nº", "Bairro", "Cidade"].join(";");
     const lines = filtered.map((r) =>
@@ -482,6 +502,14 @@ export default function VistoriasClient({
                         <td className="text-center">
                           <button className="btn btn-sm btn-link text-decoration-none py-0" onClick={() => setSelected(r)}>
                             detalhes
+                          </button>
+                          <button
+                            className="btn btn-sm btn-link text-danger text-decoration-none py-0 ms-2"
+                            onClick={() => handleDelete(r.id)}
+                            disabled={deletingId === r.id || r.status === "EMITIDA" || r.status === "LANCADO"}
+                            title="Excluir vistoria"
+                          >
+                            {deletingId === r.id ? "..." : "excluir"}
                           </button>
                         </td>
                       </tr>

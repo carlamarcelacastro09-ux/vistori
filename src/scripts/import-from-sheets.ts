@@ -181,13 +181,24 @@ async function main() {
           update: {},
         });
 
-        const vehicle = await prisma.vehicle.create({
-          data: {
-            plate,
-            model: vehicleModel,
-            brand: vehicleBrand,
-          },
+        let vehicle = await prisma.vehicle.findFirst({
+          where: { plate },
+          orderBy: { createdAt: "desc" },
         });
+        if (vehicle) {
+          vehicle = await prisma.vehicle.update({
+            where: { id: vehicle.id },
+            data: { model: vehicleModel, brand: vehicleBrand },
+          });
+        } else {
+          vehicle = await prisma.vehicle.create({
+            data: {
+              plate,
+              model: vehicleModel,
+              brand: vehicleBrand,
+            },
+          });
+        }
 
         await prisma.vehicleCatalog.upsert({
           where: { model: vehicleModel },
