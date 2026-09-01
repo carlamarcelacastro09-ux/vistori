@@ -87,11 +87,19 @@ export async function PATCH(request: NextRequest, { params }: Params) {
           { status: 400 },
         );
       }
-      const vehicle = await prisma.vehicle.upsert({
+      let vehicle = await prisma.vehicle.findFirst({
         where: { plate: data.plate },
-        create: { plate: data.plate, brand: data.vehicleBrand, model: data.vehicleModel },
-        update: { brand: data.vehicleBrand, model: data.vehicleModel },
       });
+      if (vehicle) {
+        vehicle = await prisma.vehicle.update({
+          where: { id: vehicle.id },
+          data: { brand: data.vehicleBrand, model: data.vehicleModel },
+        });
+      } else {
+        vehicle = await prisma.vehicle.create({
+          data: { plate: data.plate, brand: data.vehicleBrand, model: data.vehicleModel },
+        });
+      }
       vehicleId = vehicle.id;
 
       await prisma.vehicleCatalog.upsert({

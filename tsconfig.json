@@ -30,5 +30,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "src/scripts/debug-cpf-dom.ts", "src/scripts/debug-cpf-field.ts", "src/scripts/debug-nome-field.ts", "src/scripts/debug-nome-input.ts"]
 }

@@ -83,9 +83,19 @@ export async function POST(req: Request) {
     update: {},
   });
 
-  const vehicle = await prisma.vehicle.create({
-    data: { plate: data.plate, brand: data.vehicleBrand, model: data.vehicleModel },
+  let vehicle = await prisma.vehicle.findFirst({
+    where: { plate: data.plate },
   });
+  if (vehicle) {
+    vehicle = await prisma.vehicle.update({
+      where: { id: vehicle.id },
+      data: { brand: data.vehicleBrand, model: data.vehicleModel },
+    });
+  } else {
+    vehicle = await prisma.vehicle.create({
+      data: { plate: data.plate, brand: data.vehicleBrand, model: data.vehicleModel },
+    });
+  }
 
   await prisma.vehicleCatalog.upsert({
     where: { model: data.vehicleModel },
