@@ -5,7 +5,10 @@ import { prisma } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 const schema = z.object({
-  cnpj: z.string().min(11).max(14),
+  cnpj: z
+    .string()
+    .transform((v) => v.replace(/\D/g, ""))
+    .refine((v) => v.length === 11 || v.length === 14, "CNPJ/CPF inválido"),
   serie: z.string().min(1).max(5),
   jobId: z.string().uuid().optional(),
 });
@@ -22,8 +25,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, message: "Dados inválidos." }, { status: 400 });
   }
 
-  const cnpj = parsed.data.cnpj.replace(/\D/g, "");
-  const { serie, jobId } = parsed.data;
+  const { cnpj, serie, jobId } = parsed.data;
 
   // Incremento atômico: uma única query, sem race condition entre execuções do robô.
   const rows = await prisma.$queryRaw<Array<{ lastNumber: number }>>`
