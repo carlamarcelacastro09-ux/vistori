@@ -224,18 +224,16 @@ function parear(
       semVistoria.push(...grupo);
       continue;
     }
-    if (candidatas.length !== grupo.length) {
-      // Não dá para saber qual vistoria corresponde a qual nota sem palpite.
+    if (candidatas.length !== 1 || grupo.length !== 1) {
+      // Mais de uma vistoria (ou mais de uma nota) para a mesma placa+documento:
+      // a ordem de emissão segue a fila de jobs, não a data da vistoria, então
+      // qualquer pareamento aqui seria palpite. Vai para revisão manual.
       ambiguas.push(...grupo);
       continue;
     }
 
-    const notasOrdenadas = [...grupo].sort((a, b) => a.nDPS - b.nDPS);
-    const vistoriasOrdenadas = [...candidatas].sort((a, b) => a.date.getTime() - b.date.getTime());
-    notasOrdenadas.forEach((nota, i) => {
-      usadas.add(vistoriasOrdenadas[i].id);
-      pares.push({ nota, vistoria: vistoriasOrdenadas[i] });
-    });
+    usadas.add(candidatas[0].id);
+    pares.push({ nota: grupo[0], vistoria: candidatas[0] });
   }
 
   return { pares, semVistoria, ambiguas };

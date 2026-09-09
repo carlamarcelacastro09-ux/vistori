@@ -31,6 +31,16 @@ export async function POST(req: Request) {
   if (!job) return NextResponse.json({ ok: false, message: "Job não encontrado." }, { status: 404 });
 
   const sucesso = status === "EMITIDA" || status === "LANCADO";
+
+  // Nunca sobrescrever uma nota já gravada: se dois workers processarem o mesmo
+  // job (lease expirada), o primeiro resultado é o que vale.
+  if (job.inspection.nfseNumber && job.inspection.nfseNumber !== nfseNumber) {
+    return NextResponse.json(
+      { ok: false, message: `Vistoria já tem a NFS-e ${job.inspection.nfseNumber}.` },
+      { status: 409 },
+    );
+  }
+
   await prisma.$transaction([
     prisma.invoiceJob.update({
       where: { id: jobId },
