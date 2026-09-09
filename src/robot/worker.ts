@@ -285,7 +285,7 @@ async function emitirComAvancoDeSerie(
  * tentativa anterior. Retorna o nNFSe quando a nota existe — evita emitir uma
  * segunda nota para o mesmo serviço quando o robô morreu após o envio.
  */
-async function buscarNfsePorDps(cliente: NfseClient, nDPS: string): Promise<string | null> {
+async function buscarNfsePorDps(cliente: NfseClient, nDPS: string, job: Job): Promise<string | null> {
   const idDps = buildDpsId({
     cLocEmi: envOr("EMITENTE_COD_MUNICIPIO", "3540903"),
     tipoInsc: "CNPJ",
@@ -297,7 +297,20 @@ async function buscarNfsePorDps(cliente: NfseClient, nDPS: string): Promise<stri
   try {
     const status = await cliente.fetchDpsStatus(idDps);
     const consulta = await cliente.fetchByChave(status.chaveAcesso);
-    return String(consulta.nfse.infNFSe.nNFSe);
+    const infNFSe = consulta.nfse.infNFSe;
+    const tomador = infNFSe.DPS.infDPS.toma?.identificador;
+    const docNota = onlyDigits(
+      tomador && "CPF" in tomador ? tomador.CPF : tomador && "CNPJ" in tomador ? tomador.CNPJ : "",
+    );
+
+    // O número pode pertencer a outra nota (colisão E0014): só reconcilia se o
+    // tomador da nota encontrada for o mesmo cliente deste job.
+    if (docNota && docNota !== onlyDigits(job.customerDoc)) {
+      log(`nDPS ${nDPS} pertence a outra nota (tomador ${docNota}). Emitindo com um novo número.`);
+      return null;
+    }
+
+    return String(infNFSe.nNFSe);
   } catch (e) {
     if (e instanceof NotFoundError) return null;
     throw e;
@@ -321,7 +334,7 @@ async function runSession(singleJob: boolean) {
       try {
         // Tentativa anterior pode ter enviado a DPS e morrido antes de gravar o resultado.
         if (next.job.dpsNumber) {
-          const jaEmitida = await buscarNfsePorDps(cliente, next.job.dpsNumber);
+          const jaEmitida = await buscarNfsePorDps(cliente, next.job.dpsNumber, next.job);
           if (jaEmitida) {
             log(`nDPS ${next.job.dpsNumber} já gerou a NFS-e ${jaEmitida} na SEFIN. Reconciliando sem reemitir.`);
             await updateJob({ jobId: next.job.jobId, status: "LANCADO", nfseNumber: jaEmitida, dpsNumber: next.job.dpsNumber });
