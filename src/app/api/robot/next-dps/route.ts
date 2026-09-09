@@ -43,8 +43,13 @@ export async function POST(req: Request) {
 
   // Grava o nDPS reservado antes do envio ao SEFIN: se o robô morrer no meio,
   // a próxima execução reconcilia esse número em vez de emitir uma segunda nota.
+  // Só um job em processamento e ainda sem nota pode receber a reserva: assim
+  // um jobId qualquer não sobrescreve o nDPS de uma vistoria já emitida.
   if (jobId) {
-    const job = await prisma.invoiceJob.findUnique({ where: { id: jobId }, select: { inspectionId: true } });
+    const job = await prisma.invoiceJob.findFirst({
+      where: { id: jobId, status: "PROCESSANDO", inspection: { nfseNumber: null } },
+      select: { inspectionId: true },
+    });
     if (job) {
       await prisma.inspection.update({
         where: { id: job.inspectionId },

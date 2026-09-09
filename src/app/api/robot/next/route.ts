@@ -75,10 +75,13 @@ export async function POST(req: Request) {
       continue;
     }
 
-    const updated = await prisma.invoiceJob.update({
-      where: { id: job.id },
+    // Claim atômico: se outro worker pegou o job entre a leitura e o update,
+    // o WHERE não casa e nada é alterado — buscamos o próximo job.
+    const claim = await prisma.invoiceJob.updateMany({
+      where: { id: job.id, status: job.status, updatedAt: job.updatedAt },
       data: { status: "PROCESSANDO", attempts: { increment: 1 } },
     });
+    if (claim.count === 0) continue;
 
     const lastNfse = await prisma.inspection.findFirst({
       where: {
@@ -93,7 +96,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       job: {
-        jobId: updated.id,
+        jobId: job.id,
         competenceDate: formatBR(insp.date),
         paidValue: Number(insp.paidValue),
         noteValue: Number(insp.noteValue),

@@ -96,11 +96,16 @@ async function faixaDps(): Promise<{ inicio: number; fim: number }> {
   return { inicio, fim };
 }
 
-async function coletarNotas(client: NfseClient, inicio: number, fim: number): Promise<NotaSefin[]> {
+async function coletarNotas(
+  client: NfseClient,
+  inicio: number,
+  fim: number,
+): Promise<{ notas: NotaSefin[]; falhas: number[] }> {
   const cnpjEmitente = onlyDigits(requiredEnv("EMITENTE_CNPJ"));
   const serie = envOr("NFSE_SERIE", "1");
   const codMunicipio = envOr("EMITENTE_COD_MUNICIPIO", "3540903");
   const notas: NotaSefin[] = [];
+  const falhas: number[] = [];
 
   for (let nDPS = inicio; nDPS <= fim; nDPS++) {
     const idDps = buildDpsId({
@@ -112,8 +117,8 @@ async function coletarNotas(client: NfseClient, inicio: number, fim: number): Pr
     });
 
     try {
-      const status = await client.fetchDpsStatus(idDps);
-      const consulta = await client.fetchByChave(status.chaveAcesso);
+      const status = await tentarComRetry(() => client.fetchDpsStatus(idDps));
+      const consulta = await tentarComRetry(() => client.fetchByChave(status.chaveAcesso));
       const infNFSe = consulta.nfse.infNFSe;
       const tomador = infNFSe.DPS.infDPS.toma?.identificador;
       const doc = onlyDigits(
@@ -134,14 +139,106 @@ async function coletarNotas(client: NfseClient, inicio: number, fim: number): Pr
       if (e instanceof NotFoundError) {
         log(`nDPS ${nDPS} -> sem NFS-e gerada`);
       } else {
-        log(`nDPS ${nDPS} -> erro na consulta: ${e instanceof Error ? e.message : String(e)}`);
+        falhas.push(nDPS);
+        log(`nDPS ${nDPS} -> FALHA na consulta: ${e instanceof Error ? e.message : String(e)}`);
       }
     }
 
     await new Promise((r) => setTimeout(r, 400));
   }
 
-  return notas;
+  return { notas, falhas };
+}
+
+/** Repete consultas que falharam por erro transitório (rede/servidor). */
+async function tentarComRetry<T>(fn: () => Promise<T>): Promise<T> {
+  let ultimo: unknown;
+  for (let tentativa = 1; tentativa <= 3; tentativa++) {
+    try {
+      return await fn();
+    } catch (e) {
+      if (e instanceof NotFoundError) throw e;
+      ultimo = e;
+      await new Promise((r) => setTimeout(r, 1000 * tentativa));
+    }
+  }
+  throw ultimo;
+}
+
+type Vistoria = Awaited<ReturnType<typeof carregarVistorias>>[number];
+
+function carregarVistorias() {
+  return prisma.inspection.findMany({
+    include: { customer: true, vehicle: true, job: true },
+    orderBy: { date: "asc" },
+  });
+}
+
+/**
+ * Associa cada NFS-e à sua vistoria. Prioriza identificadores já gravados
+ * (nDPS, depois número da nota). O que sobra é resolvido por grupo de
+ * placa+documento: só pareia quando a ordem cronológica é inequívoca
+ * (mesma quantidade de notas e de vistorias); o resto vira revisão manual.
+ */
+function parear(
+  notas: NotaSefin[],
+  vistorias: Vistoria[],
+): { pares: Array<{ nota: NotaSefin; vistoria: Vistoria }>; semVistoria: NotaSefin[]; ambiguas: NotaSefin[] } {
+  const pares: Array<{ nota: NotaSefin; vistoria: Vistoria }> = [];
+  const semVistoria: NotaSefin[] = [];
+  const ambiguas: NotaSefin[] = [];
+  const usadas = new Set<string>();
+
+  const combina = (nota: NotaSefin, v: Vistoria) =>
+    !usadas.has(v.id) &&
+    nota.placa !== "" &&
+    normalizePlate(v.vehicle?.plate ?? "") === nota.placa &&
+    (nota.doc === "" || onlyDigits(v.customer.doc) === nota.doc);
+
+  const pendentes: NotaSefin[] = [];
+
+  for (const nota of notas) {
+    const porIdentificador = vistorias.filter(
+      (v) => combina(nota, v) && (v.dpsNumber === String(nota.nDPS) || v.nfseNumber === nota.nfseNumber),
+    );
+    if (porIdentificador.length === 1) {
+      usadas.add(porIdentificador[0].id);
+      pares.push({ nota, vistoria: porIdentificador[0] });
+    } else {
+      pendentes.push(nota);
+    }
+  }
+
+  const grupos = new Map<string, NotaSefin[]>();
+  for (const nota of pendentes) {
+    const chave = `${nota.placa}|${nota.doc}`;
+    const atual = grupos.get(chave);
+    if (atual) atual.push(nota);
+    else grupos.set(chave, [nota]);
+  }
+
+  for (const grupo of grupos.values()) {
+    const candidatas = vistorias.filter((v) => combina(grupo[0], v));
+
+    if (candidatas.length === 0) {
+      semVistoria.push(...grupo);
+      continue;
+    }
+    if (candidatas.length !== grupo.length) {
+      // Não dá para saber qual vistoria corresponde a qual nota sem palpite.
+      ambiguas.push(...grupo);
+      continue;
+    }
+
+    const notasOrdenadas = [...grupo].sort((a, b) => a.nDPS - b.nDPS);
+    const vistoriasOrdenadas = [...candidatas].sort((a, b) => a.date.getTime() - b.date.getTime());
+    notasOrdenadas.forEach((nota, i) => {
+      usadas.add(vistoriasOrdenadas[i].id);
+      pares.push({ nota, vistoria: vistoriasOrdenadas[i] });
+    });
+  }
+
+  return { pares, semVistoria, ambiguas };
 }
 
 async function main() {
@@ -161,57 +258,36 @@ async function main() {
 
   try {
     log(`Conferindo nDPS ${inicio}..${fim} (${aplicar ? "APLICANDO correções" : "simulação"})`);
-    const notas = await coletarNotas(client, inicio, fim);
+    const { notas, falhas } = await coletarNotas(client, inicio, fim);
     log(`Notas encontradas na SEFIN: ${notas.length}`);
 
-    const vistorias = await prisma.inspection.findMany({
-      include: { customer: true, vehicle: true, job: true },
-      orderBy: { date: "asc" },
-    });
+    if (falhas.length > 0 && aplicar) {
+      throw new Error(
+        `Consulta incompleta (${falhas.length} nDPS com falha: ${falhas.join(", ")}). ` +
+          "Nada foi gravado — rode novamente quando a SEFIN responder.",
+      );
+    }
 
-    const usadas = new Set<string>();
+    const vistorias = await carregarVistorias();
+
+    const { pares, semVistoria, ambiguas } = parear(notas, vistorias);
+
     let corretas = 0;
     let corrigidas = 0;
-    const semVistoria: NotaSefin[] = [];
 
-    for (const nota of notas) {
-      const candidatas = vistorias.filter(
-        (v) =>
-          !usadas.has(v.id) &&
-          nota.placa !== "" &&
-          normalizePlate(v.vehicle?.plate ?? "") === nota.placa &&
-          (nota.doc === "" || onlyDigits(v.customer.doc) === nota.doc),
-      );
-
-      // Preferimos a vistoria que já aponta para esta nota; senão, a mais próxima da emissão.
-      const escolhida =
-        candidatas.find((v) => v.nfseNumber === nota.nfseNumber) ??
-        candidatas.sort(
-          (a, b) =>
-            Math.abs(a.date.getTime() - nota.emissao.getTime()) -
-            Math.abs(b.date.getTime() - nota.emissao.getTime()),
-        )[0];
-
-      if (!escolhida) {
-        semVistoria.push(nota);
-        log(`SEM VISTORIA: NFS-e ${nota.nfseNumber} (nDPS ${nota.nDPS}) | placa ${nota.placa} | doc ${nota.doc}`);
-        continue;
-      }
-
-      usadas.add(escolhida.id);
-
+    for (const { nota, vistoria } of pares) {
       if (
-        escolhida.nfseNumber === nota.nfseNumber &&
-        escolhida.dpsNumber === String(nota.nDPS) &&
-        escolhida.status === "LANCADO"
+        vistoria.nfseNumber === nota.nfseNumber &&
+        vistoria.dpsNumber === String(nota.nDPS) &&
+        vistoria.status === "LANCADO"
       ) {
         corretas++;
         continue;
       }
 
       log(
-        `CORRIGIR: ${escolhida.vehicle?.plate ?? "?"} | ${escolhida.customer.name} | ` +
-          `nota ${escolhida.nfseNumber ?? "(vazia)"} -> ${nota.nfseNumber} (nDPS ${nota.nDPS})`,
+        `CORRIGIR: ${vistoria.vehicle?.plate ?? "?"} | ${vistoria.customer.name} | ` +
+          `nota ${vistoria.nfseNumber ?? "(vazia)"} -> ${nota.nfseNumber} (nDPS ${nota.nDPS})`,
       );
       corrigidas++;
 
@@ -219,7 +295,7 @@ async function main() {
 
       await prisma.$transaction(async (tx) => {
         await tx.inspection.update({
-          where: { id: escolhida.id },
+          where: { id: vistoria.id },
           data: {
             status: "LANCADO",
             nfseNumber: nota.nfseNumber,
@@ -227,26 +303,38 @@ async function main() {
             errorMessage: null,
           },
         });
-        if (escolhida.job) {
+        if (vistoria.job) {
           await tx.invoiceJob.update({
-            where: { id: escolhida.job.id },
+            where: { id: vistoria.job.id },
             data: { status: "CONCLUIDO", lastError: null },
           });
         }
       });
     }
 
+    const conferidas = new Set(pares.map((p) => p.vistoria.id));
     // Vistorias com número de nota que nenhuma NFS-e da faixa confirma.
-    const suspeitas = vistorias.filter((v) => v.nfseNumber && !usadas.has(v.id));
+    const suspeitas = vistorias.filter((v) => v.nfseNumber && !conferidas.has(v.id));
 
     log("\n=== RESUMO ===");
     log(`Notas conferidas: ${notas.length}`);
     log(`Já corretas: ${corretas}`);
     log(`${aplicar ? "Corrigidas" : "A corrigir"}: ${corrigidas}`);
     log(`Notas sem vistoria correspondente: ${semVistoria.length}`);
+    for (const n of semVistoria) {
+      log(`  - NFS-e ${n.nfseNumber} (nDPS ${n.nDPS}) | placa ${n.placa} | doc ${n.doc}`);
+    }
+    log(`Notas ambíguas (revisar manualmente): ${ambiguas.length}`);
+    for (const n of ambiguas) {
+      log(`  ! NFS-e ${n.nfseNumber} (nDPS ${n.nDPS}) | ${n.descricao}`);
+    }
     log(`Vistorias com nota não confirmada na faixa: ${suspeitas.length}`);
     for (const v of suspeitas) {
       log(`  ? ${v.vehicle?.plate ?? "-"} | ${v.customer.name} | nota ${v.nfseNumber}`);
+    }
+    if (falhas.length > 0) {
+      log(`Consultas com falha (rode novamente): ${falhas.join(", ")}`);
+      process.exitCode = 1;
     }
     if (!aplicar && corrigidas > 0) {
       log("\nNada foi gravado. Rode novamente com --apply para aplicar as correções.");
