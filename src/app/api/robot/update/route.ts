@@ -6,6 +6,7 @@ const schema = z.object({
   jobId: z.string().uuid(),
   status: z.enum(["EMITIDA", "LANCADO", "ERRO"]),
   nfseNumber: z.string().optional(),
+  dpsNumber: z.string().optional(),
   errorMessage: z.string().optional(),
 });
 
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, message: "Dados inválidos." }, { status: 400 });
   }
 
-  const { jobId, status, nfseNumber, errorMessage } = parsed.data;
+  const { jobId, status, nfseNumber, dpsNumber, errorMessage } = parsed.data;
 
   const job = await prisma.invoiceJob.findUnique({
     where: { id: jobId },
@@ -30,6 +31,16 @@ export async function POST(req: Request) {
   if (!job) return NextResponse.json({ ok: false, message: "Job não encontrado." }, { status: 404 });
 
   const sucesso = status === "EMITIDA" || status === "LANCADO";
+
+  // Nunca sobrescrever uma nota já gravada: se dois workers processarem o mesmo
+  // job (lease expirada), o primeiro resultado é o que vale.
+  if (job.inspection.nfseNumber && job.inspection.nfseNumber !== nfseNumber) {
+    return NextResponse.json(
+      { ok: false, message: `Vistoria já tem a NFS-e ${job.inspection.nfseNumber}.` },
+      { status: 409 },
+    );
+  }
+
   await prisma.$transaction([
     prisma.invoiceJob.update({
       where: { id: jobId },
@@ -37,7 +48,12 @@ export async function POST(req: Request) {
     }),
     prisma.inspection.update({
       where: { id: job.inspectionId },
-      data: { status: sucesso ? "LANCADO" : status, nfseNumber: sucesso ? nfseNumber ?? null : null, errorMessage: status === "ERRO" ? errorMessage ?? "Erro" : null },
+      data: {
+        status: sucesso ? "LANCADO" : status,
+        nfseNumber: sucesso ? nfseNumber ?? null : null,
+        ...(dpsNumber ? { dpsNumber } : {}),
+        errorMessage: status === "ERRO" ? errorMessage ?? "Erro" : null,
+      },
     }),
   ]);
 

@@ -391,6 +391,7 @@ export const ModelName = {
   Street: 'Street',
   Inspection: 'Inspection',
   InvoiceJob: 'InvoiceJob',
+  DpsCounter: 'DpsCounter',
   AccountPayable: 'AccountPayable'
 } as const
 
@@ -407,7 +408,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "customer" | "vehicle" | "vehicleCatalog" | "street" | "inspection" | "invoiceJob" | "accountPayable"
+    modelProps: "user" | "customer" | "vehicle" | "vehicleCatalog" | "street" | "inspection" | "invoiceJob" | "dpsCounter" | "accountPayable"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -929,6 +930,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    DpsCounter: {
+      payload: Prisma.$DpsCounterPayload<ExtArgs>
+      fields: Prisma.DpsCounterFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DpsCounterFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DpsCounterPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DpsCounterFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DpsCounterPayload>
+        }
+        findFirst: {
+          args: Prisma.DpsCounterFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DpsCounterPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DpsCounterFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DpsCounterPayload>
+        }
+        findMany: {
+          args: Prisma.DpsCounterFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DpsCounterPayload>[]
+        }
+        create: {
+          args: Prisma.DpsCounterCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DpsCounterPayload>
+        }
+        createMany: {
+          args: Prisma.DpsCounterCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DpsCounterCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DpsCounterPayload>[]
+        }
+        delete: {
+          args: Prisma.DpsCounterDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DpsCounterPayload>
+        }
+        update: {
+          args: Prisma.DpsCounterUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DpsCounterPayload>
+        }
+        deleteMany: {
+          args: Prisma.DpsCounterDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DpsCounterUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DpsCounterUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DpsCounterPayload>[]
+        }
+        upsert: {
+          args: Prisma.DpsCounterUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DpsCounterPayload>
+        }
+        aggregate: {
+          args: Prisma.DpsCounterAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDpsCounter>
+        }
+        groupBy: {
+          args: Prisma.DpsCounterGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DpsCounterGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DpsCounterCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DpsCounterCountAggregateOutputType> | number
+        }
+      }
+    }
     AccountPayable: {
       payload: Prisma.$AccountPayablePayload<ExtArgs>
       fields: Prisma.AccountPayableFieldRefs
@@ -1116,6 +1191,7 @@ export const InspectionScalarFieldEnum = {
   noteValue: 'noteValue',
   status: 'status',
   nfseNumber: 'nfseNumber',
+  dpsNumber: 'dpsNumber',
   errorMessage: 'errorMessage',
   customerId: 'customerId',
   vehicleId: 'vehicleId',
@@ -1136,6 +1212,16 @@ export const InvoiceJobScalarFieldEnum = {
 } as const
 
 export type InvoiceJobScalarFieldEnum = (typeof InvoiceJobScalarFieldEnum)[keyof typeof InvoiceJobScalarFieldEnum]
+
+
+export const DpsCounterScalarFieldEnum = {
+  cnpj: 'cnpj',
+  serie: 'serie',
+  lastNumber: 'lastNumber',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DpsCounterScalarFieldEnum = (typeof DpsCounterScalarFieldEnum)[keyof typeof DpsCounterScalarFieldEnum]
 
 
 export const AccountPayableScalarFieldEnum = {
@@ -1410,6 +1496,7 @@ export type GlobalOmitConfig = {
   street?: Prisma.StreetOmit
   inspection?: Prisma.InspectionOmit
   invoiceJob?: Prisma.InvoiceJobOmit
+  dpsCounter?: Prisma.DpsCounterOmit
   accountPayable?: Prisma.AccountPayableOmit
 }
 
