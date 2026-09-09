@@ -8,6 +8,8 @@ import {
   RegimeApuracaoSimplesNacional,
   RegimeEspecialTributacao,
   ReceitaRejectionError,
+  NotFoundError,
+  buildDpsId,
   createInMemoryRetryStore,
 } from "open-nfse";
 import type { DpsCounter, DpsCounterScope } from "open-nfse";
@@ -32,6 +34,7 @@ type NextJobResponse =
         district: string;
         city: string;
         lastNfseNumber: string | null;
+        dpsNumber: string | null;
       };
     };
 
@@ -84,17 +87,18 @@ function loadCertificate(): { pfx: Buffer; password: string } {
  * O nDPS é uma sequência própria do emitente por série — independente do nNFSe
  * devolvido pela SEFIN — e nunca pode repetir (rejeição E0014).
  */
-function createApiDpsCounter(): DpsCounter & { lastIssued: string | null } {
+function createApiDpsCounter(): DpsCounter & { lastIssued: string | null; currentJobId: string | null } {
   const baseUrl = requiredEnv("APP_BASE_URL").replace(/\/+$/, "");
   const apiKey = requiredEnv("ROBOT_API_KEY");
 
   const counter = {
     lastIssued: null as string | null,
+    currentJobId: null as string | null,
     async next(scope: DpsCounterScope): Promise<string> {
       const res = await fetch(`${baseUrl}/api/robot/next-dps`, {
         method: "POST",
         headers: { "content-type": "application/json", "x-api-key": apiKey },
-        body: JSON.stringify({ cnpj: scope.emitenteCnpj, serie: scope.serie }),
+        body: JSON.stringify({ cnpj: scope.emitenteCnpj, serie: scope.serie, jobId: counter.currentJobId ?? undefined }),
       });
       if (!res.ok) throw new Error(`Falha /api/robot/next-dps: ${res.status}`);
       const data = (await res.json()) as { nDPS?: string };
@@ -276,6 +280,30 @@ async function emitirComAvancoDeSerie(
   }
 }
 
+/**
+ * Consulta na SEFIN a NFS-e gerada a partir de um nDPS já reservado numa
+ * tentativa anterior. Retorna o nNFSe quando a nota existe — evita emitir uma
+ * segunda nota para o mesmo serviço quando o robô morreu após o envio.
+ */
+async function buscarNfsePorDps(cliente: NfseClient, nDPS: string): Promise<string | null> {
+  const idDps = buildDpsId({
+    cLocEmi: envOr("EMITENTE_COD_MUNICIPIO", "3540903"),
+    tipoInsc: "CNPJ",
+    inscricaoFederal: onlyDigits(requiredEnv("EMITENTE_CNPJ")),
+    serie: envOr("NFSE_SERIE", "1"),
+    nDPS,
+  });
+
+  try {
+    const status = await cliente.fetchDpsStatus(idDps);
+    const consulta = await cliente.fetchByChave(status.chaveAcesso);
+    return String(consulta.nfse.infNFSe.nNFSe);
+  } catch (e) {
+    if (e instanceof NotFoundError) return null;
+    throw e;
+  }
+}
+
 async function runSession(singleJob: boolean) {
   log("Inicializando cliente NFS-e Nacional (API SEFIN)...");
   const { client: cliente, dpsCounter, tpAmb } = createNfseClient();
@@ -288,7 +316,20 @@ async function runSession(singleJob: boolean) {
         break;
       }
 
+      dpsCounter.currentJobId = next.job.jobId;
+
       try {
+        // Tentativa anterior pode ter enviado a DPS e morrido antes de gravar o resultado.
+        if (next.job.dpsNumber) {
+          const jaEmitida = await buscarNfsePorDps(cliente, next.job.dpsNumber);
+          if (jaEmitida) {
+            log(`nDPS ${next.job.dpsNumber} já gerou a NFS-e ${jaEmitida} na SEFIN. Reconciliando sem reemitir.`);
+            await updateJob({ jobId: next.job.jobId, status: "LANCADO", nfseNumber: jaEmitida, dpsNumber: next.job.dpsNumber });
+            if (singleJob) break;
+            continue;
+          }
+        }
+
         const numero = await emitirComAvancoDeSerie(cliente, tpAmb, next.job);
 
         await updateJob({ jobId: next.job.jobId, status: "LANCADO", nfseNumber: numero, dpsNumber: dpsCounter.lastIssued ?? undefined });

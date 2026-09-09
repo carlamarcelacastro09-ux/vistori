@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 const schema = z.object({
   cnpj: z.string().min(11).max(14),
   serie: z.string().min(1).max(5),
+  jobId: z.string().uuid().optional(),
 });
 
 export async function POST(req: Request) {
@@ -22,7 +23,7 @@ export async function POST(req: Request) {
   }
 
   const cnpj = parsed.data.cnpj.replace(/\D/g, "");
-  const { serie } = parsed.data;
+  const { serie, jobId } = parsed.data;
 
   // Incremento atômico: uma única query, sem race condition entre execuções do robô.
   const rows = await prisma.$queryRaw<Array<{ lastNumber: number }>>`
@@ -36,6 +37,18 @@ export async function POST(req: Request) {
   const numero = rows[0]?.lastNumber;
   if (!numero || numero < 1) {
     return NextResponse.json({ ok: false, message: "Falha ao gerar nDPS." }, { status: 500 });
+  }
+
+  // Grava o nDPS reservado antes do envio ao SEFIN: se o robô morrer no meio,
+  // a próxima execução reconcilia esse número em vez de emitir uma segunda nota.
+  if (jobId) {
+    const job = await prisma.invoiceJob.findUnique({ where: { id: jobId }, select: { inspectionId: true } });
+    if (job) {
+      await prisma.inspection.update({
+        where: { id: job.inspectionId },
+        data: { dpsNumber: String(numero) },
+      });
+    }
   }
 
   return NextResponse.json({ ok: true, nDPS: String(numero) });
