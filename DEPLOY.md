@@ -84,6 +84,23 @@ Antes do primeiro uso — ou depois de emitir notas manualmente no portal — si
 EMITENTE_CNPJ=00000000000000 NFSE_SERIE=1 NFSE_DPS_SEED=6271 npm run db:seed:dps
 ```
 
+### Conferência das notas já emitidas
+
+O robô de conferência percorre a faixa de `nDPS`, baixa cada NFS-e da SEFIN, identifica o veículo pela
+descrição do serviço e corrige no banco as vistorias com número de nota errado ou ausente:
+
+```bash
+# simulação (não grava nada)
+CONFERENCIA_DPS_INICIO=6265 CONFERENCIA_DPS_FIM=6271 npm run robot:conferencia
+
+# aplica as correções
+CONFERENCIA_DPS_INICIO=6265 CONFERENCIA_DPS_FIM=6271 npm run robot:conferencia -- --apply
+```
+
+Requer as mesmas variáveis do robô de emissão (`CERT_PFX_PATH`/`CERT_PFX_BASE64`, `CERT_PASSWORD`,
+`EMITENTE_CNPJ`, `NFSE_SERIE`, `DATABASE_URL`). Sem `CONFERENCIA_DPS_FIM` ele usa o valor atual do
+contador `DpsCounter`.
+
 ## 5.1) Botão “Rodar agora” dentro do sistema (opcional, recomendado)
 
 Para habilitar a tela **Automação** (disparar importação e robô sob demanda), configure no Vercel:

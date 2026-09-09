@@ -19,7 +19,8 @@
     "db:limpar:duplicados": "tsx src/scripts/limpar-duplicados.ts",
     "db:seed:dps": "tsx src/scripts/seed-dps-counter.ts",
     "robot:run": "tsx src/robot/worker.ts",
-    "robot:once": "cross-env ROBOT_RUN_ONCE=1 tsx src/robot/worker.ts"
+    "robot:once": "cross-env ROBOT_RUN_ONCE=1 tsx src/robot/worker.ts",
+    "robot:conferencia": "tsx src/robot/conferencia.ts"
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.1030.0",
