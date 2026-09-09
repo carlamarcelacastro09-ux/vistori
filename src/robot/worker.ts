@@ -303,10 +303,15 @@ async function buscarNfsePorDps(cliente: NfseClient, nDPS: string, job: Job): Pr
       tomador && "CPF" in tomador ? tomador.CPF : tomador && "CNPJ" in tomador ? tomador.CNPJ : "",
     );
 
-    // O número pode pertencer a outra nota (colisão E0014): só reconcilia se o
-    // tomador da nota encontrada for o mesmo cliente deste job.
-    if (docNota && docNota !== onlyDigits(job.customerDoc)) {
-      log(`nDPS ${nDPS} pertence a outra nota (tomador ${docNota}). Emitindo com um novo número.`);
+    const descricao = infNFSe.DPS.infDPS.serv.cServ.xDescServ.toUpperCase();
+    const placa = job.plate.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+
+    // O número pode pertencer a outra nota (colisão E0014): só reconcilia quando
+    // a nota encontrada é deste mesmo serviço — mesmo tomador e mesma placa.
+    const mesmoTomador = docNota !== "" && docNota === onlyDigits(job.customerDoc);
+    const mesmaPlaca = placa !== "" && descricao.replace(/[^A-Z0-9]/g, "").includes(placa);
+    if (!mesmoTomador || !mesmaPlaca) {
+      log(`nDPS ${nDPS} pertence a outra nota (tomador ${docNota || "?"} / "${descricao}"). Emitindo com um novo número.`);
       return null;
     }
 
