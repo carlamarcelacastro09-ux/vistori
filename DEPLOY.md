@@ -53,7 +53,7 @@ Cadastre os secrets no GitHub:
 - `CERT_PFX_BASE64` = conteúdo do certificado .pfx codificado em base64 (veja abaixo)
 - `CERT_PASSWORD` = senha do certificado digital
 - `NFSE_AMBIENTE` = `producao` ou `homologacao` (padrão: `producao`)
-- `NFSE_SERIE` = série da NFS-e (padrão: `NFSE`)
+- `NFSE_SERIE` = série da DPS/NFS-e (padrão: `1`)
 - `NFSE_CODIGO_SERVICO` = código tributação nacional (padrão: `010501`)
 - `NFSE_ALIQ_ISS` = alíquota ISS em % (ex.: `2.0`). Se `0`, não envia alíquota.
 - `NFSE_PTOTTRIBSN` = % total tributos Simples Nacional (padrão: `6.0`)
@@ -69,6 +69,20 @@ base64 -w 0 certificado.pfx > cert_base64.txt
 ```
 
 Copie o conteúdo de `cert_base64.txt` e cole no secret `CERT_PFX_BASE64` do GitHub.
+
+### Numeração da DPS (nDPS)
+
+O `nDPS` é a numeração sequencial própria do emitente por série e **não** é o número da NFS-e (`nNFSe`)
+devolvido pela SEFIN. Ela é compartilhada com as notas emitidas manualmente no Emissor Nacional: reenviar
+um `nDPS` já usado é rejeitado com `E0014`.
+
+O robô lê o próximo número da tabela `DpsCounter` (endpoint `/api/robot/next-dps`, incremento atômico).
+Antes do primeiro uso — ou depois de emitir notas manualmente no portal — sincronize o contador com o
+último `nDPS` realmente usado:
+
+```bash
+EMITENTE_CNPJ=00000000000000 NFSE_SERIE=1 NFSE_DPS_SEED=6271 npm run db:seed:dps
+```
 
 ## 5.1) Botão “Rodar agora” dentro do sistema (opcional, recomendado)
 

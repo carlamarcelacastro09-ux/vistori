@@ -53,6 +53,11 @@ export type Inspection = Prisma.InspectionModel
  */
 export type InvoiceJob = Prisma.InvoiceJobModel
 /**
+ * Model DpsCounter
+ * 
+ */
+export type DpsCounter = Prisma.DpsCounterModel
+/**
  * Model AccountPayable
  * 
  */

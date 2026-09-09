@@ -8,9 +8,9 @@ import {
   RegimeApuracaoSimplesNacional,
   RegimeEspecialTributacao,
   ReceitaRejectionError,
-  createInMemoryDpsCounter,
   createInMemoryRetryStore,
 } from "open-nfse";
+import type { DpsCounter, DpsCounterScope } from "open-nfse";
 
 type NextJobResponse =
   | { ok: true; job: null }
@@ -79,47 +79,51 @@ function loadCertificate(): { pfx: Buffer; password: string } {
   throw new Error("Configure CERT_PFX_PATH (caminho do .pfx) ou CERT_PFX_BASE64 (conteúdo em base64).");
 }
 
-async function fetchLastDpsNumber(): Promise<number> {
-  // Tenta via env override primeiro (para quando a API ainda não está disponível)
-  const envOverride = process.env.NFSE_LAST_DPS;
-  if (envOverride) {
-    const n = parseInt(envOverride, 10);
-    if (n > 0) return n;
-  }
-
+/**
+ * Contador de nDPS persistido no banco via API, com incremento atômico.
+ * O nDPS é uma sequência própria do emitente por série — independente do nNFSe
+ * devolvido pela SEFIN — e nunca pode repetir (rejeição E0014).
+ */
+function createApiDpsCounter(): DpsCounter & { lastIssued: string | null } {
   const baseUrl = requiredEnv("APP_BASE_URL").replace(/\/+$/, "");
   const apiKey = requiredEnv("ROBOT_API_KEY");
-  try {
-    const res = await fetch(`${baseUrl}/api/robot/last-nfse`, {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-api-key": apiKey },
-    });
-    if (res.ok) {
-      const data = await res.json();
-      const n = parseInt(data.lastNumber || "0", 10);
-      if (n > 0) return n;
-    }
-  } catch {}
-  return 0;
+
+  const counter = {
+    lastIssued: null as string | null,
+    async next(scope: DpsCounterScope): Promise<string> {
+      const res = await fetch(`${baseUrl}/api/robot/next-dps`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-api-key": apiKey },
+        body: JSON.stringify({ cnpj: scope.emitenteCnpj, serie: scope.serie }),
+      });
+      if (!res.ok) throw new Error(`Falha /api/robot/next-dps: ${res.status}`);
+      const data = (await res.json()) as { nDPS?: string };
+      if (!data.nDPS) throw new Error("Resposta inválida de /api/robot/next-dps");
+      counter.lastIssued = data.nDPS;
+      log(`nDPS reservado: ${data.nDPS} (série ${scope.serie})`);
+      return data.nDPS;
+    },
+  };
+
+  return counter;
 }
 
-async function createNfseClient() {
+function createNfseClient() {
   const cert = loadCertificate();
   const ambienteStr = envOr("NFSE_AMBIENTE", "producao").toLowerCase();
   const isProducao = ambienteStr === "producao";
   const ambiente = isProducao ? Ambiente.Producao : Ambiente.ProducaoRestrita;
 
-  const lastDps = await fetchLastDpsNumber();
-  const nextDps = lastDps + 1;
-  log(`Último nDPS no banco: ${lastDps}. Próximo: ${nextDps}`);
+  const dpsCounter = createApiDpsCounter();
 
   return {
     client: new NfseClient({
       ambiente,
       certificado: cert,
-      dpsCounter: createInMemoryDpsCounter(nextDps),
+      dpsCounter,
       retryStore: createInMemoryRetryStore(),
     }),
+    dpsCounter,
     tpAmb: isProducao ? TipoAmbienteDps.Producao : TipoAmbienteDps.Homologacao,
   };
 }
@@ -221,7 +225,7 @@ async function fetchNextJob(): Promise<NextJobResponse> {
   return (await res.json()) as NextJobResponse;
 }
 
-async function updateJob(input: { jobId: string; status: "EMITIDA" | "LANCADO" | "ERRO"; nfseNumber?: string; errorMessage?: string }) {
+async function updateJob(input: { jobId: string; status: "EMITIDA" | "LANCADO" | "ERRO"; nfseNumber?: string; dpsNumber?: string; errorMessage?: string }) {
   const baseUrl = requiredEnv("APP_BASE_URL").replace(/\/+$/, "");
   const apiKey = requiredEnv("ROBOT_API_KEY");
 
@@ -249,9 +253,32 @@ async function updateJob(input: { jobId: string; status: "EMITIDA" | "LANCADO" |
   if (!res.ok) throw new Error(`Falha /api/robot/update: ${res.status}`);
 }
 
+const MAX_TENTATIVAS_E0014 = 5;
+
+/**
+ * Emite retentando quando a SEFIN acusa nDPS duplicado (E0014): cada tentativa
+ * consome um novo número do contador, avançando a série até um número livre.
+ */
+async function emitirComAvancoDeSerie(
+  cliente: NfseClient,
+  tpAmb: TipoAmbienteDps,
+  job: Job,
+  useFallbackCep = false,
+): Promise<string> {
+  for (let tentativa = 1; ; tentativa++) {
+    try {
+      return await emitirNota(cliente, tpAmb, job, useFallbackCep);
+    } catch (e) {
+      const duplicado = e instanceof ReceitaRejectionError && e.codigo === "E0014";
+      if (!duplicado || tentativa >= MAX_TENTATIVAS_E0014) throw e;
+      log(`nDPS já usado na SEFIN (E0014). Avançando para o próximo número (tentativa ${tentativa}).`);
+    }
+  }
+}
+
 async function runSession(singleJob: boolean) {
   log("Inicializando cliente NFS-e Nacional (API SEFIN)...");
-  const { client: cliente, tpAmb } = await createNfseClient();
+  const { client: cliente, dpsCounter, tpAmb } = createNfseClient();
 
   try {
     for (;;) {
@@ -262,9 +289,9 @@ async function runSession(singleJob: boolean) {
       }
 
       try {
-        const numero = await emitirNota(cliente, tpAmb, next.job);
+        const numero = await emitirComAvancoDeSerie(cliente, tpAmb, next.job);
 
-        await updateJob({ jobId: next.job.jobId, status: "LANCADO", nfseNumber: numero });
+        await updateJob({ jobId: next.job.jobId, status: "LANCADO", nfseNumber: numero, dpsNumber: dpsCounter.lastIssued ?? undefined });
         process.stdout.write(`Job ${next.job.jobId} concluído. Nota ${numero}.\n`);
 
         if (singleJob) break;
@@ -273,8 +300,8 @@ async function runSession(singleJob: boolean) {
         if (e instanceof ReceitaRejectionError && e.codigo === "E0240") {
           log(`CEP inválido (${next.job.cep}). Retentando com CEP padrão ${CEP_FALLBACK}...`);
           try {
-            const numero = await emitirNota(cliente, tpAmb, next.job, true);
-            await updateJob({ jobId: next.job.jobId, status: "LANCADO", nfseNumber: numero });
+            const numero = await emitirComAvancoDeSerie(cliente, tpAmb, next.job, true);
+            await updateJob({ jobId: next.job.jobId, status: "LANCADO", nfseNumber: numero, dpsNumber: dpsCounter.lastIssued ?? undefined });
             process.stdout.write(`Job ${next.job.jobId} concluído (CEP fallback). Nota ${numero}.\n`);
             if (singleJob) break;
             continue;

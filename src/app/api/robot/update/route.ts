@@ -6,6 +6,7 @@ const schema = z.object({
   jobId: z.string().uuid(),
   status: z.enum(["EMITIDA", "LANCADO", "ERRO"]),
   nfseNumber: z.string().optional(),
+  dpsNumber: z.string().optional(),
   errorMessage: z.string().optional(),
 });
 
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, message: "Dados inválidos." }, { status: 400 });
   }
 
-  const { jobId, status, nfseNumber, errorMessage } = parsed.data;
+  const { jobId, status, nfseNumber, dpsNumber, errorMessage } = parsed.data;
 
   const job = await prisma.invoiceJob.findUnique({
     where: { id: jobId },
@@ -37,7 +38,12 @@ export async function POST(req: Request) {
     }),
     prisma.inspection.update({
       where: { id: job.inspectionId },
-      data: { status: sucesso ? "LANCADO" : status, nfseNumber: sucesso ? nfseNumber ?? null : null, errorMessage: status === "ERRO" ? errorMessage ?? "Erro" : null },
+      data: {
+        status: sucesso ? "LANCADO" : status,
+        nfseNumber: sucesso ? nfseNumber ?? null : null,
+        ...(dpsNumber ? { dpsNumber } : {}),
+        errorMessage: status === "ERRO" ? errorMessage ?? "Erro" : null,
+      },
     }),
   ]);
 
