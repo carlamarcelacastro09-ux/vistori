@@ -106,6 +106,7 @@ model Inspection {
   noteValue     Decimal       @default(25.00) @db.Decimal(12, 2)
   status        InvoiceStatus @default(AGUARDANDO)
   nfseNumber    String?
+  nDps          String?
   errorMessage  String?
 
   customerId    String

@@ -129,6 +129,7 @@ async function createNfseClient() {
       retryStore: createInMemoryRetryStore(),
     }),
     tpAmb: isProducao ? TipoAmbienteDps.Producao : TipoAmbienteDps.Homologacao,
+    nextDps,
   };
 }
 
@@ -229,7 +230,7 @@ async function fetchNextJob(): Promise<NextJobResponse> {
   return (await res.json()) as NextJobResponse;
 }
 
-async function updateJob(input: { jobId: string; status: "EMITIDA" | "LANCADO" | "ERRO"; nfseNumber?: string; errorMessage?: string }) {
+async function updateJob(input: { jobId: string; status: "EMITIDA" | "LANCADO" | "ERRO"; nfseNumber?: string; nDps?: string; errorMessage?: string }) {
   const baseUrl = requiredEnv("APP_BASE_URL").replace(/\/+$/, "");
   const apiKey = requiredEnv("ROBOT_API_KEY");
 
@@ -259,7 +260,8 @@ async function updateJob(input: { jobId: string; status: "EMITIDA" | "LANCADO" |
 
 async function runSession(singleJob: boolean) {
   log("Inicializando cliente NFS-e Nacional (API SEFIN)...");
-  const { client: cliente, tpAmb } = await createNfseClient();
+  const { client: cliente, tpAmb, nextDps } = await createNfseClient();
+  let currentDps = nextDps;
 
   try {
     for (;;) {
@@ -272,8 +274,9 @@ async function runSession(singleJob: boolean) {
       try {
         const numero = await emitirNota(cliente, tpAmb, next.job);
 
-        await updateJob({ jobId: next.job.jobId, status: "LANCADO", nfseNumber: numero });
-        process.stdout.write(`Job ${next.job.jobId} concluído. Nota ${numero}.\n`);
+        await updateJob({ jobId: next.job.jobId, status: "LANCADO", nfseNumber: numero, nDps: String(currentDps) });
+        process.stdout.write(`Job ${next.job.jobId} concluído. Nota ${numero} (nDPS ${currentDps}).\n`);
+        currentDps++;
 
         if (singleJob) break;
       } catch (e) {
@@ -282,8 +285,9 @@ async function runSession(singleJob: boolean) {
           log(`CEP inválido (${next.job.cep}). Retentando com CEP padrão ${CEP_FALLBACK}...`);
           try {
             const numero = await emitirNota(cliente, tpAmb, next.job, true);
-            await updateJob({ jobId: next.job.jobId, status: "LANCADO", nfseNumber: numero });
-            process.stdout.write(`Job ${next.job.jobId} concluído (CEP fallback). Nota ${numero}.\n`);
+            await updateJob({ jobId: next.job.jobId, status: "LANCADO", nfseNumber: numero, nDps: String(currentDps) });
+            process.stdout.write(`Job ${next.job.jobId} concluído (CEP fallback). Nota ${numero} (nDPS ${currentDps}).\n`);
+            currentDps++;
             if (singleJob) break;
             continue;
           } catch (e2) {

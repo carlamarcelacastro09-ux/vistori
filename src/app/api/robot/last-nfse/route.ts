@@ -13,32 +13,32 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
-  // Busca o maior nfseNumber numérico no banco (nNFSe das notas concluídas)
-  const rows = await prisma.inspection.findMany({
-    where: { nfseNumber: { not: null } },
-    select: { nfseNumber: true },
-  });
+  // Busca o maior nDPS numérico no banco (o DPS real consumido na SEFIN).
+  // Notas concluídas guardam nDps preenchido. Jobs em ERRO podem ter
+  // consumido 1 nDPS se a requisição chegou na SEFIN e foi rejeitada
+  // por outro motivo. E0014 não consome nDPS (duplicidade).
+  const [comNfse, erroredJobs] = await Promise.all([
+    prisma.inspection.findMany({
+      where: { nDps: { not: null } },
+      select: { nDps: true },
+    }),
+    prisma.invoiceJob.findMany({
+      where: { status: "ERRO" },
+      select: { lastError: true },
+    }),
+  ]);
 
-  let maxNfse = 0;
-  for (const r of rows) {
-    const n = parseInt(r.nfseNumber || "0", 10);
-    if (!isNaN(n) && n > maxNfse) maxNfse = n;
+  let maxDps = 0;
+  for (const r of comNfse) {
+    const n = parseInt(r.nDps || "0", 10);
+    if (!isNaN(n) && n > maxDps) maxDps = n;
   }
-
-  // Cada job concluído consome 1 nDPS (o próprio nNFSe = nDPS quando ok).
-  // Jobs em ERRO consomem 1 nDPS SOMENTE se a requisição chegou na SEFIN e
-  // a nota foi rejeitada por outro motivo. E0014 é rejeição por duplicidade,
-  // ou seja, o nDPS já existia e NÃO foi consumido nesta tentativa.
-  const erroredJobs = await prisma.invoiceJob.findMany({
-    where: { status: "ERRO" },
-    select: { lastError: true },
-  });
 
   const dpsConsumidosPorErro = erroredJobs.filter(
     (j) => !isE0014(j.lastError)
   ).length;
 
-  const lastDps = maxNfse + dpsConsumidosPorErro;
+  const lastDps = maxDps + dpsConsumidosPorErro;
 
   return NextResponse.json({ ok: true, lastNumber: String(lastDps) });
 }
