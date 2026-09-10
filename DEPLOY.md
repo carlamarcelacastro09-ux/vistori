@@ -81,25 +81,26 @@ Antes do primeiro uso — ou depois de emitir notas manualmente no portal — si
 último `nDPS` realmente usado:
 
 ```bash
-EMITENTE_CNPJ=00000000000000 NFSE_SERIE=1 NFSE_DPS_SEED=6271 npm run db:seed:dps
+EMITENTE_CNPJ=00000000000000 NFSE_SERIE=1 NFSE_DPS_SEED=6424 npm run db:seed:dps
 ```
 
 ### Conferência das notas já emitidas
 
-O robô de conferência percorre a faixa de `nDPS`, baixa cada NFS-e da SEFIN, identifica o veículo pela
+O robô de conferência lista na SEFIN todas as NFS-e do CNPJ (distribuição de DFe — cobre todas as
+séries, inclusive as emitidas manualmente no portal), descarta as canceladas, identifica o veículo pela
 descrição do serviço e corrige no banco as vistorias com número de nota errado ou ausente:
 
 ```bash
 # simulação (não grava nada)
-CONFERENCIA_DPS_INICIO=6265 CONFERENCIA_DPS_FIM=6271 npm run robot:conferencia
+npm run robot:conferencia
 
 # aplica as correções
-CONFERENCIA_DPS_INICIO=6265 CONFERENCIA_DPS_FIM=6271 npm run robot:conferencia -- --apply
+npm run robot:conferencia -- --apply
 ```
 
 Requer as mesmas variáveis do robô de emissão (`CERT_PFX_PATH`/`CERT_PFX_BASE64`, `CERT_PASSWORD`,
-`EMITENTE_CNPJ`, `NFSE_SERIE`, `DATABASE_URL`). Sem `CONFERENCIA_DPS_FIM` ele usa o valor atual do
-contador `DpsCounter`.
+`EMITENTE_CNPJ`, `DATABASE_URL`). Notas com placa repetida em mais de uma vistoria, ou sem vistoria
+correspondente, ficam para revisão manual — o robô nunca as corrige por conta própria.
 
 ## 5.1) Botão “Rodar agora” dentro do sistema (opcional, recomendado)
 
