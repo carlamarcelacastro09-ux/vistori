@@ -35,9 +35,17 @@ async function main() {
   const notas: NotaSite[] = [];
 
   try {
-    console.log("Abrindo emissor nacional...");
+    console.log("Abrindo login por certificado...");
+    await page.goto("https://certificado.nfse.gov.br/EmissorNacional/Certificado", {
+      waitUntil: "domcontentloaded",
+      timeout: 120000,
+    });
+    await page.waitForTimeout(10000);
+    await page.screenshot({ path: "emissor-cert.png" });
+
+    console.log("Abrindo notas emitidas...");
     await page.goto("https://www.nfse.gov.br/EmissorNacional/Notas/Emitidas", {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 120000,
     });
 

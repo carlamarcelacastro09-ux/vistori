@@ -45,6 +45,7 @@ export type InspectionMinAggregateOutputType = {
   noteValue: runtime.Decimal | null
   status: $Enums.InvoiceStatus | null
   nfseNumber: string | null
+  nDps: string | null
   errorMessage: string | null
   customerId: string | null
   vehicleId: string | null
@@ -60,6 +61,7 @@ export type InspectionMaxAggregateOutputType = {
   noteValue: runtime.Decimal | null
   status: $Enums.InvoiceStatus | null
   nfseNumber: string | null
+  nDps: string | null
   errorMessage: string | null
   customerId: string | null
   vehicleId: string | null
@@ -75,6 +77,7 @@ export type InspectionCountAggregateOutputType = {
   noteValue: number
   status: number
   nfseNumber: number
+  nDps: number
   errorMessage: number
   customerId: number
   vehicleId: number
@@ -102,6 +105,7 @@ export type InspectionMinAggregateInputType = {
   noteValue?: true
   status?: true
   nfseNumber?: true
+  nDps?: true
   errorMessage?: true
   customerId?: true
   vehicleId?: true
@@ -117,6 +121,7 @@ export type InspectionMaxAggregateInputType = {
   noteValue?: true
   status?: true
   nfseNumber?: true
+  nDps?: true
   errorMessage?: true
   customerId?: true
   vehicleId?: true
@@ -132,6 +137,7 @@ export type InspectionCountAggregateInputType = {
   noteValue?: true
   status?: true
   nfseNumber?: true
+  nDps?: true
   errorMessage?: true
   customerId?: true
   vehicleId?: true
@@ -234,6 +240,7 @@ export type InspectionGroupByOutputType = {
   noteValue: runtime.Decimal
   status: $Enums.InvoiceStatus
   nfseNumber: string | null
+  nDps: string | null
   errorMessage: string | null
   customerId: string
   vehicleId: string | null
@@ -272,6 +279,7 @@ export type InspectionWhereInput = {
   noteValue?: Prisma.DecimalFilter<"Inspection"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInvoiceStatusFilter<"Inspection"> | $Enums.InvoiceStatus
   nfseNumber?: Prisma.StringNullableFilter<"Inspection"> | string | null
+  nDps?: Prisma.StringNullableFilter<"Inspection"> | string | null
   errorMessage?: Prisma.StringNullableFilter<"Inspection"> | string | null
   customerId?: Prisma.StringFilter<"Inspection"> | string
   vehicleId?: Prisma.StringNullableFilter<"Inspection"> | string | null
@@ -291,6 +299,7 @@ export type InspectionOrderByWithRelationInput = {
   noteValue?: Prisma.SortOrder
   status?: Prisma.SortOrder
   nfseNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  nDps?: Prisma.SortOrderInput | Prisma.SortOrder
   errorMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   customerId?: Prisma.SortOrder
   vehicleId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -313,6 +322,7 @@ export type InspectionWhereUniqueInput = Prisma.AtLeast<{
   noteValue?: Prisma.DecimalFilter<"Inspection"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInvoiceStatusFilter<"Inspection"> | $Enums.InvoiceStatus
   nfseNumber?: Prisma.StringNullableFilter<"Inspection"> | string | null
+  nDps?: Prisma.StringNullableFilter<"Inspection"> | string | null
   errorMessage?: Prisma.StringNullableFilter<"Inspection"> | string | null
   customerId?: Prisma.StringFilter<"Inspection"> | string
   vehicleId?: Prisma.StringNullableFilter<"Inspection"> | string | null
@@ -332,6 +342,7 @@ export type InspectionOrderByWithAggregationInput = {
   noteValue?: Prisma.SortOrder
   status?: Prisma.SortOrder
   nfseNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  nDps?: Prisma.SortOrderInput | Prisma.SortOrder
   errorMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   customerId?: Prisma.SortOrder
   vehicleId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -355,6 +366,7 @@ export type InspectionScalarWhereWithAggregatesInput = {
   noteValue?: Prisma.DecimalWithAggregatesFilter<"Inspection"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInvoiceStatusWithAggregatesFilter<"Inspection"> | $Enums.InvoiceStatus
   nfseNumber?: Prisma.StringNullableWithAggregatesFilter<"Inspection"> | string | null
+  nDps?: Prisma.StringNullableWithAggregatesFilter<"Inspection"> | string | null
   errorMessage?: Prisma.StringNullableWithAggregatesFilter<"Inspection"> | string | null
   customerId?: Prisma.StringWithAggregatesFilter<"Inspection"> | string
   vehicleId?: Prisma.StringNullableWithAggregatesFilter<"Inspection"> | string | null
@@ -370,6 +382,7 @@ export type InspectionCreateInput = {
   noteValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InvoiceStatus
   nfseNumber?: string | null
+  nDps?: string | null
   errorMessage?: string | null
   customer: Prisma.CustomerCreateNestedOneWithoutInspectionsInput
   vehicle?: Prisma.VehicleCreateNestedOneWithoutInspectionsInput
@@ -386,6 +399,7 @@ export type InspectionUncheckedCreateInput = {
   noteValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InvoiceStatus
   nfseNumber?: string | null
+  nDps?: string | null
   errorMessage?: string | null
   customerId: string
   vehicleId?: string | null
@@ -402,6 +416,7 @@ export type InspectionUpdateInput = {
   noteValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   nfseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nDps?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customer?: Prisma.CustomerUpdateOneRequiredWithoutInspectionsNestedInput
   vehicle?: Prisma.VehicleUpdateOneWithoutInspectionsNestedInput
@@ -418,6 +433,7 @@ export type InspectionUncheckedUpdateInput = {
   noteValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   nfseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nDps?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
   vehicleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -434,6 +450,7 @@ export type InspectionCreateManyInput = {
   noteValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InvoiceStatus
   nfseNumber?: string | null
+  nDps?: string | null
   errorMessage?: string | null
   customerId: string
   vehicleId?: string | null
@@ -449,6 +466,7 @@ export type InspectionUpdateManyMutationInput = {
   noteValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   nfseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nDps?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -461,6 +479,7 @@ export type InspectionUncheckedUpdateManyInput = {
   noteValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   nfseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nDps?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
   vehicleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -486,6 +505,7 @@ export type InspectionCountOrderByAggregateInput = {
   noteValue?: Prisma.SortOrder
   status?: Prisma.SortOrder
   nfseNumber?: Prisma.SortOrder
+  nDps?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrder
   customerId?: Prisma.SortOrder
   vehicleId?: Prisma.SortOrder
@@ -506,6 +526,7 @@ export type InspectionMaxOrderByAggregateInput = {
   noteValue?: Prisma.SortOrder
   status?: Prisma.SortOrder
   nfseNumber?: Prisma.SortOrder
+  nDps?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrder
   customerId?: Prisma.SortOrder
   vehicleId?: Prisma.SortOrder
@@ -521,6 +542,7 @@ export type InspectionMinOrderByAggregateInput = {
   noteValue?: Prisma.SortOrder
   status?: Prisma.SortOrder
   nfseNumber?: Prisma.SortOrder
+  nDps?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrder
   customerId?: Prisma.SortOrder
   vehicleId?: Prisma.SortOrder
@@ -702,6 +724,7 @@ export type InspectionCreateWithoutCreatedByInput = {
   noteValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InvoiceStatus
   nfseNumber?: string | null
+  nDps?: string | null
   errorMessage?: string | null
   customer: Prisma.CustomerCreateNestedOneWithoutInspectionsInput
   vehicle?: Prisma.VehicleCreateNestedOneWithoutInspectionsInput
@@ -717,6 +740,7 @@ export type InspectionUncheckedCreateWithoutCreatedByInput = {
   noteValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InvoiceStatus
   nfseNumber?: string | null
+  nDps?: string | null
   errorMessage?: string | null
   customerId: string
   vehicleId?: string | null
@@ -761,6 +785,7 @@ export type InspectionScalarWhereInput = {
   noteValue?: Prisma.DecimalFilter<"Inspection"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInvoiceStatusFilter<"Inspection"> | $Enums.InvoiceStatus
   nfseNumber?: Prisma.StringNullableFilter<"Inspection"> | string | null
+  nDps?: Prisma.StringNullableFilter<"Inspection"> | string | null
   errorMessage?: Prisma.StringNullableFilter<"Inspection"> | string | null
   customerId?: Prisma.StringFilter<"Inspection"> | string
   vehicleId?: Prisma.StringNullableFilter<"Inspection"> | string | null
@@ -776,6 +801,7 @@ export type InspectionCreateWithoutCustomerInput = {
   noteValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InvoiceStatus
   nfseNumber?: string | null
+  nDps?: string | null
   errorMessage?: string | null
   vehicle?: Prisma.VehicleCreateNestedOneWithoutInspectionsInput
   createdBy: Prisma.UserCreateNestedOneWithoutInspectionsInput
@@ -791,6 +817,7 @@ export type InspectionUncheckedCreateWithoutCustomerInput = {
   noteValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InvoiceStatus
   nfseNumber?: string | null
+  nDps?: string | null
   errorMessage?: string | null
   vehicleId?: string | null
   createdById: string
@@ -832,6 +859,7 @@ export type InspectionCreateWithoutVehicleInput = {
   noteValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InvoiceStatus
   nfseNumber?: string | null
+  nDps?: string | null
   errorMessage?: string | null
   customer: Prisma.CustomerCreateNestedOneWithoutInspectionsInput
   createdBy: Prisma.UserCreateNestedOneWithoutInspectionsInput
@@ -847,6 +875,7 @@ export type InspectionUncheckedCreateWithoutVehicleInput = {
   noteValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InvoiceStatus
   nfseNumber?: string | null
+  nDps?: string | null
   errorMessage?: string | null
   customerId: string
   createdById: string
@@ -888,6 +917,7 @@ export type InspectionCreateWithoutJobInput = {
   noteValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InvoiceStatus
   nfseNumber?: string | null
+  nDps?: string | null
   errorMessage?: string | null
   customer: Prisma.CustomerCreateNestedOneWithoutInspectionsInput
   vehicle?: Prisma.VehicleCreateNestedOneWithoutInspectionsInput
@@ -903,6 +933,7 @@ export type InspectionUncheckedCreateWithoutJobInput = {
   noteValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InvoiceStatus
   nfseNumber?: string | null
+  nDps?: string | null
   errorMessage?: string | null
   customerId: string
   vehicleId?: string | null
@@ -934,6 +965,7 @@ export type InspectionUpdateWithoutJobInput = {
   noteValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   nfseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nDps?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customer?: Prisma.CustomerUpdateOneRequiredWithoutInspectionsNestedInput
   vehicle?: Prisma.VehicleUpdateOneWithoutInspectionsNestedInput
@@ -949,6 +981,7 @@ export type InspectionUncheckedUpdateWithoutJobInput = {
   noteValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   nfseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nDps?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
   vehicleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -964,6 +997,7 @@ export type InspectionCreateManyCreatedByInput = {
   noteValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InvoiceStatus
   nfseNumber?: string | null
+  nDps?: string | null
   errorMessage?: string | null
   customerId: string
   vehicleId?: string | null
@@ -978,6 +1012,7 @@ export type InspectionUpdateWithoutCreatedByInput = {
   noteValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   nfseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nDps?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customer?: Prisma.CustomerUpdateOneRequiredWithoutInspectionsNestedInput
   vehicle?: Prisma.VehicleUpdateOneWithoutInspectionsNestedInput
@@ -993,6 +1028,7 @@ export type InspectionUncheckedUpdateWithoutCreatedByInput = {
   noteValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   nfseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nDps?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
   vehicleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1008,6 +1044,7 @@ export type InspectionUncheckedUpdateManyWithoutCreatedByInput = {
   noteValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   nfseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nDps?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
   vehicleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1022,6 +1059,7 @@ export type InspectionCreateManyCustomerInput = {
   noteValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InvoiceStatus
   nfseNumber?: string | null
+  nDps?: string | null
   errorMessage?: string | null
   vehicleId?: string | null
   createdById: string
@@ -1036,6 +1074,7 @@ export type InspectionUpdateWithoutCustomerInput = {
   noteValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   nfseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nDps?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.VehicleUpdateOneWithoutInspectionsNestedInput
   createdBy?: Prisma.UserUpdateOneRequiredWithoutInspectionsNestedInput
@@ -1051,6 +1090,7 @@ export type InspectionUncheckedUpdateWithoutCustomerInput = {
   noteValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   nfseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nDps?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1066,6 +1106,7 @@ export type InspectionUncheckedUpdateManyWithoutCustomerInput = {
   noteValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   nfseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nDps?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1080,6 +1121,7 @@ export type InspectionCreateManyVehicleInput = {
   noteValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InvoiceStatus
   nfseNumber?: string | null
+  nDps?: string | null
   errorMessage?: string | null
   customerId: string
   createdById: string
@@ -1094,6 +1136,7 @@ export type InspectionUpdateWithoutVehicleInput = {
   noteValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   nfseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nDps?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customer?: Prisma.CustomerUpdateOneRequiredWithoutInspectionsNestedInput
   createdBy?: Prisma.UserUpdateOneRequiredWithoutInspectionsNestedInput
@@ -1109,6 +1152,7 @@ export type InspectionUncheckedUpdateWithoutVehicleInput = {
   noteValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   nfseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nDps?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1124,6 +1168,7 @@ export type InspectionUncheckedUpdateManyWithoutVehicleInput = {
   noteValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   nfseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nDps?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1140,6 +1185,7 @@ export type InspectionSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   noteValue?: boolean
   status?: boolean
   nfseNumber?: boolean
+  nDps?: boolean
   errorMessage?: boolean
   customerId?: boolean
   vehicleId?: boolean
@@ -1159,6 +1205,7 @@ export type InspectionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   noteValue?: boolean
   status?: boolean
   nfseNumber?: boolean
+  nDps?: boolean
   errorMessage?: boolean
   customerId?: boolean
   vehicleId?: boolean
@@ -1177,6 +1224,7 @@ export type InspectionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   noteValue?: boolean
   status?: boolean
   nfseNumber?: boolean
+  nDps?: boolean
   errorMessage?: boolean
   customerId?: boolean
   vehicleId?: boolean
@@ -1195,13 +1243,14 @@ export type InspectionSelectScalar = {
   noteValue?: boolean
   status?: boolean
   nfseNumber?: boolean
+  nDps?: boolean
   errorMessage?: boolean
   customerId?: boolean
   vehicleId?: boolean
   createdById?: boolean
 }
 
-export type InspectionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "date" | "paidValue" | "noteValue" | "status" | "nfseNumber" | "errorMessage" | "customerId" | "vehicleId" | "createdById", ExtArgs["result"]["inspection"]>
+export type InspectionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "date" | "paidValue" | "noteValue" | "status" | "nfseNumber" | "nDps" | "errorMessage" | "customerId" | "vehicleId" | "createdById", ExtArgs["result"]["inspection"]>
 export type InspectionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
   vehicle?: boolean | Prisma.Inspection$vehicleArgs<ExtArgs>
@@ -1236,6 +1285,7 @@ export type $InspectionPayload<ExtArgs extends runtime.Types.Extensions.Internal
     noteValue: runtime.Decimal
     status: $Enums.InvoiceStatus
     nfseNumber: string | null
+    nDps: string | null
     errorMessage: string | null
     customerId: string
     vehicleId: string | null
@@ -1675,6 +1725,7 @@ export interface InspectionFieldRefs {
   readonly noteValue: Prisma.FieldRef<"Inspection", 'Decimal'>
   readonly status: Prisma.FieldRef<"Inspection", 'InvoiceStatus'>
   readonly nfseNumber: Prisma.FieldRef<"Inspection", 'String'>
+  readonly nDps: Prisma.FieldRef<"Inspection", 'String'>
   readonly errorMessage: Prisma.FieldRef<"Inspection", 'String'>
   readonly customerId: Prisma.FieldRef<"Inspection", 'String'>
   readonly vehicleId: Prisma.FieldRef<"Inspection", 'String'>
