@@ -199,7 +199,7 @@ function parear(
 
   for (const nota of notas) {
     const porIdentificador = vistorias.filter(
-      (v) => combina(nota, v) && (v.dpsNumber === String(nota.nDPS) || v.nfseNumber === nota.nfseNumber),
+      (v) => combina(nota, v) && (v.nDps === String(nota.nDPS) || v.nfseNumber === nota.nfseNumber),
     );
     if (porIdentificador.length === 1) {
       usadas.add(porIdentificador[0].id);
@@ -276,7 +276,7 @@ async function main() {
     for (const { nota, vistoria } of pares) {
       if (
         vistoria.nfseNumber === nota.nfseNumber &&
-        vistoria.dpsNumber === String(nota.nDPS) &&
+        vistoria.nDps === String(nota.nDPS) &&
         vistoria.status === "LANCADO"
       ) {
         corretas++;
@@ -297,7 +297,7 @@ async function main() {
           data: {
             status: "LANCADO",
             nfseNumber: nota.nfseNumber,
-            dpsNumber: String(nota.nDPS),
+            nDps: String(nota.nDPS),
             errorMessage: null,
           },
         });

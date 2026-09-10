@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     if (job) {
       await prisma.inspection.update({
         where: { id: job.inspectionId },
-        data: { dpsNumber: String(numero) },
+        data: { nDps: String(numero) },
       });
     }
   }

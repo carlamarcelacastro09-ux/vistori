@@ -81,7 +81,7 @@ def main():
     notas = []
     page_num = 1
     while True:
-        url = f"https://www.nfse.gov.br/EmissorNacional/Notas/Emitidas?page={page_num}"
+        url = f"https://www.nfse.gov.br/EmissorNacional/Notas/Emitidas?pg={page_num}&datainicio=01/01/2026&datafim=10/09/2026&page=1"
         print(f"\nPágina {page_num}: {url}")
         r = session.get(url, timeout=60)
         if r.status_code != 200:

@@ -111,7 +111,7 @@ export async function POST(req: Request) {
         district: insp.customer.district,
         city: insp.customer.city,
         lastNfseNumber: lastNfse?.nfseNumber ?? null,
-        dpsNumber: insp.dpsNumber,
+        dpsNumber: insp.nDps,
       },
     });
   }

@@ -1191,7 +1191,7 @@ export const InspectionScalarFieldEnum = {
   noteValue: 'noteValue',
   status: 'status',
   nfseNumber: 'nfseNumber',
-  dpsNumber: 'dpsNumber',
+  nDps: 'nDps',
   errorMessage: 'errorMessage',
   customerId: 'customerId',
   vehicleId: 'vehicleId',
