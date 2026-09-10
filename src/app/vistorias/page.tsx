@@ -8,9 +8,9 @@ export const dynamic = "force-dynamic";
 export default async function VistoriasPage() {
   const user = await requireUser();
 
-  const [inspections, counts] = await Promise.all([
+  const [rawInspections, counts] = await Promise.all([
     prisma.inspection.findMany({
-      orderBy: [{ date: "desc" }, { nfseNumber: { sort: "desc", nulls: "last" } }],
+      orderBy: { date: "desc" },
       include: { customer: true, vehicle: true },
     }),
     prisma.inspection.groupBy({
@@ -18,6 +18,16 @@ export default async function VistoriasPage() {
       _count: { status: true },
     }),
   ]);
+
+  const inspections = [...rawInspections].sort((a, b) => {
+    if (!a.nfseNumber && !b.nfseNumber) return 0;
+    if (!a.nfseNumber) return 1;
+    if (!b.nfseNumber) return -1;
+    const na = parseInt(a.nfseNumber, 10);
+    const nb = parseInt(b.nfseNumber, 10);
+    if (isNaN(na) || isNaN(nb)) return b.nfseNumber.localeCompare(a.nfseNumber);
+    return nb - na;
+  });
 
   const statusCount: Record<string, number> = {};
   for (const group of counts) {
