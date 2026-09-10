@@ -17,7 +17,7 @@ export async function POST(req: Request) {
   // Notas concluídas guardam nDps preenchido. Jobs em ERRO podem ter
   // consumido 1 nDPS se a requisição chegou na SEFIN e foi rejeitada
   // por outro motivo. E0014 não consome nDPS (duplicidade).
-  const [comNfse, erroredJobs] = await Promise.all([
+  const [comDps, erroredJobs] = await Promise.all([
     prisma.inspection.findMany({
       where: { nDps: { not: null } },
       select: { nDps: true },
@@ -29,16 +29,35 @@ export async function POST(req: Request) {
   ]);
 
   let maxDps = 0;
-  for (const r of comNfse) {
+  for (const r of comDps) {
     const n = parseInt(r.nDps || "0", 10);
     if (!isNaN(n) && n > maxDps) maxDps = n;
   }
 
+  // Se já temos nDps no banco, o maior deles já é o último DPS consumido.
+  // Erros anteriores sem nDps gravado não devem avançar o contador,
+  // pois estamos usando o nDps real da SEFIN.
+  if (maxDps > 0) {
+    return NextResponse.json({ ok: true, lastNumber: String(maxDps) });
+  }
+
+  // Fallback: sem nDps no banco, contar erros que consumiram DPS.
   const dpsConsumidosPorErro = erroredJobs.filter(
     (j) => !isE0014(j.lastError)
   ).length;
 
-  const lastDps = maxDps + dpsConsumidosPorErro;
+  const comNfse = await prisma.inspection.findMany({
+    where: { nfseNumber: { not: null } },
+    select: { nfseNumber: true },
+  });
+
+  let maxNfse = 0;
+  for (const r of comNfse) {
+    const n = parseInt(r.nfseNumber || "0", 10);
+    if (!isNaN(n) && n > maxNfse) maxNfse = n;
+  }
+
+  const lastDps = maxNfse + dpsConsumidosPorErro;
 
   return NextResponse.json({ ok: true, lastNumber: String(lastDps) });
 }
