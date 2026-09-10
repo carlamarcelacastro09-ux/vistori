@@ -141,6 +141,15 @@ model InvoiceJob {
   @@index([status])
 }
 
+model DpsCounter {
+  cnpj       String
+  serie      String
+  lastNumber Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  @@id([cnpj, serie])
+}
+
 model AccountPayable {
   id          String               @id @default(uuid())
   description String

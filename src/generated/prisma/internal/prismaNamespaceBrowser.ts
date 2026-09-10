@@ -58,6 +58,7 @@ export const ModelName = {
   Street: 'Street',
   Inspection: 'Inspection',
   InvoiceJob: 'InvoiceJob',
+  DpsCounter: 'DpsCounter',
   AccountPayable: 'AccountPayable'
 } as const
 
@@ -151,7 +152,7 @@ export const InspectionScalarFieldEnum = {
   noteValue: 'noteValue',
   status: 'status',
   nfseNumber: 'nfseNumber',
-  nDps: 'nDps',
+  dpsNumber: 'dpsNumber',
   errorMessage: 'errorMessage',
   customerId: 'customerId',
   vehicleId: 'vehicleId',
@@ -172,6 +173,16 @@ export const InvoiceJobScalarFieldEnum = {
 } as const
 
 export type InvoiceJobScalarFieldEnum = (typeof InvoiceJobScalarFieldEnum)[keyof typeof InvoiceJobScalarFieldEnum]
+
+
+export const DpsCounterScalarFieldEnum = {
+  cnpj: 'cnpj',
+  serie: 'serie',
+  lastNumber: 'lastNumber',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DpsCounterScalarFieldEnum = (typeof DpsCounterScalarFieldEnum)[keyof typeof DpsCounterScalarFieldEnum]
 
 
 export const AccountPayableScalarFieldEnum = {

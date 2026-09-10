@@ -21,8 +21,10 @@
     "emissor:extrair-dps": "tsx src/scripts/extrair-dps-emissor.ts",
     "robot:reset:erros": "tsx src/scripts/reset-jobs-erro.ts",
     "robot:conferir": "tsx src/robot/conferencia.ts",
+    "db:seed:dps": "tsx src/scripts/seed-dps-counter.ts",
     "robot:run": "tsx src/robot/worker.ts",
-    "robot:once": "cross-env ROBOT_RUN_ONCE=1 tsx src/robot/worker.ts"
+    "robot:once": "cross-env ROBOT_RUN_ONCE=1 tsx src/robot/worker.ts",
+    "robot:conferencia": "tsx src/robot/conferencia.ts"
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.1030.0",
