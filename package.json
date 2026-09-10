@@ -17,6 +17,7 @@
     "db:report:sheets": "tsx src/scripts/report-missing-from-sheets.ts",
     "db:cleanup:streets": "tsx src/scripts/cleanup-streets.ts",
     "db:limpar:duplicados": "tsx src/scripts/limpar-duplicados.ts",
+    "emissor:preencher-cep": "tsx src/scripts/emissor-preencher-cep.ts",
     "robot:run": "tsx src/robot/worker.ts",
     "robot:once": "cross-env ROBOT_RUN_ONCE=1 tsx src/robot/worker.ts"
   },
@@ -53,6 +54,8 @@
     "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
+    "pdf-parse": "^2.4.5",
+    "playwright": "^1.62.1",
     "typescript": "^5",
     "vercel": "^54.21.1"
   }
