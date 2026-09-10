@@ -18,6 +18,7 @@
     "db:cleanup:streets": "tsx src/scripts/cleanup-streets.ts",
     "db:limpar:duplicados": "tsx src/scripts/limpar-duplicados.ts",
     "emissor:preencher-cep": "tsx src/scripts/emissor-preencher-cep.ts",
+    "emissor:extrair-dps": "tsx src/scripts/extrair-dps-emissor.ts",
     "robot:reset:erros": "tsx src/scripts/reset-jobs-erro.ts",
     "robot:conferir": "tsx src/robot/conferencia.ts",
     "robot:run": "tsx src/robot/worker.ts",
