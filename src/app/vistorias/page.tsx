@@ -10,7 +10,7 @@ export default async function VistoriasPage() {
 
   const [inspections, counts] = await Promise.all([
     prisma.inspection.findMany({
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ date: "desc" }, { nfseNumber: { sort: "desc", nulls: "last" } }],
       include: { customer: true, vehicle: true },
     }),
     prisma.inspection.groupBy({
