@@ -6,7 +6,7 @@ async function main() {
   const dryRun = process.argv.includes("--dry-run");
 
   const where = soE0014
-    ? { status: "ERRO" as const, errorMessage: { contains: "E0014" } }
+    ? { status: "ERRO" as const, lastError: { contains: "E0014" } }
     : { status: "ERRO" as const };
 
   const jobs = await prisma.invoiceJob.findMany({
