@@ -110,6 +110,11 @@ async function createNfseClient() {
   const ambiente = isProducao ? Ambiente.Producao : Ambiente.ProducaoRestrita;
 
   const lastDps = await fetchLastDpsNumber();
+  if (lastDps === 0) {
+    throw new Error(
+      "Não foi possível determinar o último nDPS. Configure NFSE_LAST_DPS ou verifique a API /api/robot/last-nfse."
+    );
+  }
   const nextDps = lastDps + 1;
   log(`Último nDPS no banco: ${lastDps}. Próximo: ${nextDps}`);
 

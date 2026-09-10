@@ -78,9 +78,16 @@ async function main() {
     return;
   }
 
-  // 2. Para cada nDPS possível (6265-6307 da sessão 1), consultar status na SEFIN
-  const startDps = 6265;
-  const endDps = 6307;
+  // 2. Descobrir o range de nDPSs a conferir
+  const errosCount = erros.length;
+  const startDps = Math.max(
+    1,
+    parseInt(process.env.NFSE_START_DPS || "6265", 10)
+  );
+  const endDps = Math.max(
+    startDps + errosCount,
+    parseInt(process.env.NFSE_END_DPS || process.env.NFSE_LAST_DPS || "6307", 10)
+  );
   
   const dpsResults: Array<{
     nDps: number;
