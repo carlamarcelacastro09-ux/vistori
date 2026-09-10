@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import {
   NfseClient,
   Ambiente,
@@ -70,12 +70,15 @@ function loadCertificate(): { pfx: Buffer; password: string } {
   const pfxBase64 = process.env.CERT_PFX_BASE64;
   const password = requiredEnv("CERT_PASSWORD");
 
-  if (pfxPath) {
-    return { pfx: readFileSync(pfxPath), password };
-  }
   if (pfxBase64) {
     return { pfx: Buffer.from(pfxBase64, "base64"), password };
   }
+
+  if (pfxPath) {
+    if (existsSync(pfxPath)) return { pfx: readFileSync(pfxPath), password };
+    throw new Error(`CERT_PFX_PATH aponta para arquivo inexistente: ${pfxPath}`);
+  }
+
   throw new Error("Configure CERT_PFX_PATH (caminho do .pfx) ou CERT_PFX_BASE64 (conteúdo em base64).");
 }
 
