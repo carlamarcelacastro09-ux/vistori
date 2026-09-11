@@ -20,6 +20,8 @@ export default async function VistoriasPage() {
   ]);
 
   const inspections = [...rawInspections].sort((a, b) => {
+    const dateDiff = new Date(b.date).getTime() - new Date(a.date).getTime();
+    if (dateDiff !== 0) return dateDiff;
     if (!a.nfseNumber && !b.nfseNumber) return 0;
     if (!a.nfseNumber) return 1;
     if (!b.nfseNumber) return -1;
