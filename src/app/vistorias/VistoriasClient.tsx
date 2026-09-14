@@ -421,117 +421,94 @@ export default function VistoriasClient({
             </div>
           </div>
 
-          <div className="table-responsive" style={{ borderRadius: 12 }}>
-            <table className="table table-sm table-hover align-middle mb-0" style={{ minWidth: 820, fontSize: 13 }}>
-              <thead style={{ background: "#f8fafc" }}>
-                <tr>
-                  <th style={{ width: 90 }}>Data</th>
-                  <th>Placa</th>
-                  <th>Veículo</th>
-                  <th>Cliente</th>
-                  <th style={{ width: 120 }}>CPF/CNPJ</th>
-                  <th style={{ width: 90 }} className="text-end">Valor</th>
-                  <th style={{ width: 100 }}>Status</th>
-                  <th style={{ width: 120 }}>Nota / Erro</th>
-                  <th style={{ width: 110 }} className="text-center">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paged.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="text-center text-muted p-4">
-                      Nenhum registro encontrado.
-                    </td>
-                  </tr>
-                ) : (
-                  paged.map((r) => {
-                    const isError = r.status === "ERRO";
-                    return (
-                      <tr key={r.id}>
-                        <td className="text-nowrap text-muted">{toBRDate(r.date)}</td>
-                        <td className="fw-medium" style={{ color: "#2c3e50" }}>{r.plate || "-"}</td>
-                        <td>
-                          <div className="fw-medium">{r.vehicleModel}</div>
-                          <div className="text-muted" style={{ fontSize: 11 }}>{r.vehicleBrand}</div>
-                        </td>
-                        <td className="fw-medium">{r.customerName}</td>
-                        <td className="text-nowrap text-muted" style={{ fontSize: 12 }}>{formatDoc(r.customerDoc)}</td>
-                        <td className="text-end fw-medium">
-                          {editingId === r.id ? (
-                            <input
-                              autoFocus
-                              type="number"
-                              step="0.01"
-                              min="0.01"
-                              className="form-control form-control-sm"
-                              style={{ width: 100, textAlign: "right" }}
-                              value={editingValue}
-                              disabled={editingSaving}
-                              onChange={(e) => setEditingValue(e.target.value)}
-                              onBlur={() => saveEditing(r.id)}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                  e.preventDefault();
-                                  saveEditing(r.id);
-                                } else if (e.key === "Escape") {
-                                  e.preventDefault();
-                                  cancelEditing();
-                                }
-                              }}
-                            />
-                          ) : (
-                            <span
-                              className="cursor-pointer"
-                              style={{ cursor: "pointer" }}
-                              onClick={() => startEditing(r)}
-                              title="Clique para editar"
+          {paged.length === 0 ? (
+            <div className="text-center text-muted p-4">
+              Nenhum registro encontrado.
+            </div>
+          ) : (
+            <div className="d-flex flex-column gap-2">
+              {paged.map((r) => {
+                const isError = r.status === "ERRO";
+                return (
+                  <div key={r.id} className="card" style={{ borderRadius: 12, borderLeft: `4px solid ${isError ? "var(--danger)" : r.nfseNumber ? "var(--success)" : "var(--muted)"}` }}>
+                    <div className="card-body p-3">
+                      <div className="d-flex flex-column flex-lg-row justify-content-between gap-2">
+                        <div className="d-flex gap-3">
+                          <div className="d-none d-sm-flex align-items-center justify-content-center flex-shrink-0" style={{ width: 52, height: 52, borderRadius: 12, background: "#f1f5f9" }}>
+                            <i className="bi bi-car-front" style={{ fontSize: 22, color: "var(--primary)" }} />
+                          </div>
+                          <div>
+                            <div className="d-flex align-items-center gap-2">
+                              <span className="fw-bold" style={{ fontSize: 16, color: "var(--foreground)" }}>{r.plate || "-"}</span>
+                              <span className="text-muted" style={{ fontSize: 13 }}>{r.vehicleBrand} {r.vehicleModel}</span>
+                            </div>
+                            <div style={{ fontSize: 14 }}>{r.customerName}</div>
+                            <div className="text-muted" style={{ fontSize: 12 }}>{formatDoc(r.customerDoc)} · {toBRDate(r.date)}</div>
+                          </div>
+                        </div>
+                        <div className="d-flex align-items-center flex-wrap gap-3">
+                          <div className="text-end">
+                            {editingId === r.id ? (
+                              <input
+                                autoFocus
+                                type="number"
+                                step="0.01"
+                                min="0.01"
+                                className="form-control form-control-sm"
+                                style={{ width: 110, textAlign: "right" }}
+                                value={editingValue}
+                                disabled={editingSaving}
+                                onChange={(e) => setEditingValue(e.target.value)}
+                                onBlur={() => saveEditing(r.id)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    saveEditing(r.id);
+                                  } else if (e.key === "Escape") {
+                                    e.preventDefault();
+                                    cancelEditing();
+                                  }
+                                }}
+                              />
+                            ) : (
+                              <div
+                                className="fw-bold"
+                                style={{ cursor: "pointer", color: "var(--foreground)" }}
+                                onClick={() => startEditing(r)}
+                                title="Clique para editar"
+                              >
+                                {toBRL(r.paidValue)}
+                              </div>
+                            )}
+                            <div className="text-muted" style={{ fontSize: 11 }}>Valor pago</div>
+                          </div>
+                          <div className="text-end" style={{ minWidth: 80 }}>
+                            {statusBadge(r.status)}
+                            <div className="mt-1" style={{ fontSize: 12, color: isError ? "var(--danger)" : "var(--primary)" }}>
+                              {isError ? (r.errorMessage ? `${r.errorMessage.slice(0, 18)}...` : "Erro") : (r.nfseNumber ?? "Aguardando")}
+                            </div>
+                          </div>
+                          <div className="d-flex gap-1">
+                            <button className="btn btn-sm btn-light" onClick={() => setSelected(r)} title="Editar detalhes">
+                              <i className="bi bi-pencil-square" style={{ fontSize: 14 }} />
+                            </button>
+                            <button
+                              className="btn btn-sm btn-light text-danger"
+                              onClick={() => handleDelete(r.id)}
+                              disabled={deletingId === r.id || r.status === "EMITIDA" || r.status === "LANCADO"}
+                              title="Excluir vistoria"
                             >
-                              {toBRL(r.paidValue)}
-                            </span>
-                          )}
-                        </td>
-                        <td>{statusBadge(r.status)}</td>
-                        <td>
-                          {isError ? (
-                            <span className="text-danger fw-medium" style={{ fontSize: 12 }} title={r.errorMessage ?? undefined}>
-                              {r.errorMessage ? `${r.errorMessage.slice(0, 16)}...` : "Erro"}
-                            </span>
-                          ) : (
-                            <span className="fw-medium" style={{ color: "#0d6efd" }}>{r.nfseNumber ?? "Aguardando"}</span>
-                          )}
-                        </td>
-                        <td className="text-center" style={{ whiteSpace: "nowrap" }}>
-                          <button
-                            className="btn btn-sm btn-link text-decoration-none py-0 px-1"
-                            onClick={() => setSelected(r)}
-                            title="Editar detalhes"
-                          >
-                            <i className="bi bi-pencil-square" style={{ fontSize: 14 }} />
-                          </button>
-                          <a
-                            href={r.nfseNumber ? `/api/inspections/${r.id}/pdf` : undefined}
-                            className={`btn btn-sm btn-link text-decoration-none py-0 px-1 ms-1 ${!r.nfseNumber ? "disabled" : ""}`}
-                            title={r.nfseNumber ? "Baixar PDF" : "PDF disponível após emissão"}
-                            target="_blank"
-                          >
-                            <i className="bi bi-file-earmark-pdf" style={{ fontSize: 15, color: r.nfseNumber ? "#dc3545" : "#adb5bd" }} />
-                          </a>
-                          <button
-                            className="btn btn-sm btn-link text-danger text-decoration-none py-0 px-1 ms-1"
-                            onClick={() => handleDelete(r.id)}
-                            disabled={deletingId === r.id || r.status === "EMITIDA" || r.status === "LANCADO"}
-                            title="Excluir vistoria"
-                          >
-                            <i className="bi bi-trash" style={{ fontSize: 14 }} />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
+                              <i className="bi bi-trash" style={{ fontSize: 14 }} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {filtered.length > PAGE_SIZE ? (
             <div className="d-flex justify-content-between align-items-center mt-2">

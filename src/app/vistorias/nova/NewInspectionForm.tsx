@@ -422,23 +422,24 @@ export default function NewInspectionForm() {
   }
 
   const SectionHeader = ({ icon, title, done, color }: { icon: string; title: string; done: boolean; color: string }) => (
-    <div className="d-flex align-items-center gap-2 mb-3">
+    <div className="d-flex align-items-center gap-3 mb-3">
       <div
-        className="d-flex align-items-center justify-content-center shadow-sm"
+        className="d-flex align-items-center justify-content-center"
         style={{
-          width: 32,
-          height: 32,
-          borderRadius: 10,
-          background: done ? "#198754" : color,
+          width: 40,
+          height: 40,
+          borderRadius: 12,
+          background: done ? "var(--success)" : color,
           color: "white",
-          fontSize: 16,
+          fontSize: 18,
+          boxShadow: `0 4px 12px ${color}40`,
         }}
       >
         <i className={`bi ${done ? "bi-check-lg" : icon}`} />
       </div>
       <div>
-        <h3 className="h6 fw-bold mb-0" style={{ color: "#2c3e50" }}>{title}</h3>
-        <div className="text-muted" style={{ fontSize: 11 }}>{done ? "Preenchido" : "Pendente"}</div>
+        <h3 className="h5 fw-bold mb-0" style={{ color: "var(--foreground)" }}>{title}</h3>
+        <div className="text-muted" style={{ fontSize: 12 }}>{done ? "Preenchido" : "Aguardando preenchimento"}</div>
       </div>
     </div>
   );
@@ -447,19 +448,24 @@ export default function NewInspectionForm() {
     `form-control text-uppercase ${errors[field] ? "is-invalid" : ""}`;
 
   const sectionCard = (children: React.ReactNode, color: string) => (
-    <div className="card border-0 shadow-sm" style={{ borderRadius: 16, borderLeft: `4px solid ${color}` }}>
-      <div className="card-body p-4">{children}</div>
+    <div className="card" style={{ borderRadius: 20, borderLeft: `4px solid ${color}`, borderColor: "var(--border)", overflow: "hidden" }}>
+      <div className="card-body p-4 p-md-5">{children}</div>
     </div>
   );
 
   return (
     <>
-      <div className="card border-0 shadow-sm mb-3" style={{ borderRadius: 16, position: "sticky", top: 0, zIndex: 100 }}>
-        <div className="card-body">
+      <div className="card mb-4" style={{ borderRadius: 20, position: "sticky", top: 12, zIndex: 100, borderColor: "var(--border)", boxShadow: "0 8px 24px rgba(0,0,0,0.04)" }}>
+        <div className="card-body p-4">
           <div className="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
-            <div>
-              <h2 className="h4 fw-bold mb-1" style={{ color: "var(--foreground)" }}>Nova Vistoria</h2>
-              <div className="text-muted" style={{ fontSize: 13 }}>Preencha os dados para registrar e enviar ao robô.</div>
+            <div className="d-flex align-items-center gap-3">
+              <div className="d-flex align-items-center justify-content-center" style={{ width: 48, height: 48, borderRadius: 14, background: "var(--primary)", color: "white", fontSize: 22 }}>
+                <i className="bi bi-clipboard-plus" />
+              </div>
+              <div>
+                <h2 className="h4 fw-bold mb-0" style={{ color: "var(--foreground)" }}>Nova Vistoria</h2>
+                <div className="text-muted" style={{ fontSize: 13 }}>Preencha os dados para registrar e enviar ao robô.</div>
+              </div>
             </div>
             <div className="d-flex align-items-center gap-3 flex-wrap">
               <div className="d-flex align-items-center gap-2" style={{ minWidth: 180 }}>
