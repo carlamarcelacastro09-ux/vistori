@@ -458,7 +458,7 @@ export default function NewInspectionForm() {
         <div className="card-body">
           <div className="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
             <div>
-              <h2 className="h4 fw-bold mb-1" style={{ color: "#2c3e50" }}>Nova Vistoria</h2>
+              <h2 className="h4 fw-bold mb-1" style={{ color: "var(--foreground)" }}>Nova Vistoria</h2>
               <div className="text-muted" style={{ fontSize: 13 }}>Preencha os dados para registrar e enviar ao robô.</div>
             </div>
             <div className="d-flex align-items-center gap-3 flex-wrap">
@@ -727,11 +727,11 @@ export default function NewInspectionForm() {
         </div>
 
         <div className="d-flex gap-3 mt-4">
-          <button className="btn btn-light border flex-grow-1 py-2" type="button" onClick={() => { reset(); setHasRecentInspection(false); }}>
+          <button className="btn btn-outline-secondary flex-grow-1 py-2" type="button" onClick={() => { reset(); setHasRecentInspection(false); }} style={{ borderRadius: 10 }}>
             <i className="bi bi-trash me-2" />
             Limpar
           </button>
-          <button className="btn btn-danger flex-grow-1 py-2" type="submit" disabled={isSubmitting}>
+          <button className="btn btn-primary flex-grow-1 py-2" type="submit" disabled={isSubmitting} style={{ borderRadius: 10 }}>
             {isSubmitting ? (
               <>
                 <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />

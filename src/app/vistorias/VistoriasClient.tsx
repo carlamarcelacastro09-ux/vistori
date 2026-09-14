@@ -433,7 +433,7 @@ export default function VistoriasClient({
                   <th style={{ width: 90 }} className="text-end">Valor</th>
                   <th style={{ width: 100 }}>Status</th>
                   <th style={{ width: 120 }}>Nota / Erro</th>
-                  <th style={{ width: 70 }} className="text-center">Ver</th>
+                  <th style={{ width: 110 }} className="text-center">Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -500,17 +500,28 @@ export default function VistoriasClient({
                             <span className="fw-medium" style={{ color: "#0d6efd" }}>{r.nfseNumber ?? "Aguardando"}</span>
                           )}
                         </td>
-                        <td className="text-center">
-                          <button className="btn btn-sm btn-link text-decoration-none py-0" onClick={() => setSelected(r)}>
-                            detalhes
+                        <td className="text-center" style={{ whiteSpace: "nowrap" }}>
+                          <button
+                            className="btn btn-sm btn-link text-decoration-none py-0 px-1"
+                            onClick={() => setSelected(r)}
+                            title="Editar detalhes"
+                          >
+                            <i className="bi bi-pencil-square" style={{ fontSize: 14 }} />
                           </button>
                           <button
-                            className="btn btn-sm btn-link text-danger text-decoration-none py-0 ms-2"
+                            className="btn btn-sm btn-link text-decoration-none py-0 px-1 ms-1"
+                            disabled={!r.nfseNumber}
+                            title={r.nfseNumber ? "Baixar PDF" : "PDF disponível após emissão"}
+                          >
+                            <i className="bi bi-file-earmark-pdf" style={{ fontSize: 15, color: r.nfseNumber ? "#dc3545" : "#adb5bd" }} />
+                          </button>
+                          <button
+                            className="btn btn-sm btn-link text-danger text-decoration-none py-0 px-1 ms-1"
                             onClick={() => handleDelete(r.id)}
                             disabled={deletingId === r.id || r.status === "EMITIDA" || r.status === "LANCADO"}
                             title="Excluir vistoria"
                           >
-                            {deletingId === r.id ? "..." : "excluir"}
+                            <i className="bi bi-trash" style={{ fontSize: 14 }} />
                           </button>
                         </td>
                       </tr>
