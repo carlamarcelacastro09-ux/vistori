@@ -508,13 +508,14 @@ export default function VistoriasClient({
                           >
                             <i className="bi bi-pencil-square" style={{ fontSize: 14 }} />
                           </button>
-                          <button
-                            className="btn btn-sm btn-link text-decoration-none py-0 px-1 ms-1"
-                            disabled={!r.nfseNumber}
+                          <a
+                            href={r.nfseNumber ? `/api/inspections/${r.id}/pdf` : undefined}
+                            className={`btn btn-sm btn-link text-decoration-none py-0 px-1 ms-1 ${!r.nfseNumber ? "disabled" : ""}`}
                             title={r.nfseNumber ? "Baixar PDF" : "PDF disponível após emissão"}
+                            target="_blank"
                           >
                             <i className="bi bi-file-earmark-pdf" style={{ fontSize: 15, color: r.nfseNumber ? "#dc3545" : "#adb5bd" }} />
-                          </button>
+                          </a>
                           <button
                             className="btn btn-sm btn-link text-danger text-decoration-none py-0 px-1 ms-1"
                             onClick={() => handleDelete(r.id)}
