@@ -98,27 +98,39 @@ model Street {
 }
 
 model Inspection {
-  id            String        @id @default(uuid())
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  date          DateTime      @default(now())
-  paidValue     Decimal       @db.Decimal(12, 2)
-  noteValue     Decimal       @default(25.00) @db.Decimal(12, 2)
-  status        InvoiceStatus @default(AGUARDANDO)
-  nfseNumber    String?
-  nDps          String?
-  errorMessage  String?
+  id                String        @id @default(uuid())
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  date              DateTime      @default(now())
+  paidValue         Decimal       @db.Decimal(12, 2)
+  noteValue         Decimal       @default(25.00) @db.Decimal(12, 2)
+  status            InvoiceStatus @default(AGUARDANDO)
+  nfseNumber        String?
+  nDps              String?
+  errorMessage      String?
 
-  customerId    String
-  customer      Customer      @relation(fields: [customerId], references: [id])
+  customerId        String
+  customer          Customer      @relation(fields: [customerId], references: [id])
 
-  vehicleId     String?
-  vehicle       Vehicle?      @relation(fields: [vehicleId], references: [id])
+  vehicleId         String?
+  vehicle           Vehicle?      @relation(fields: [vehicleId], references: [id])
 
-  createdById   String
-  createdBy     User          @relation("InspectionsCreatedBy", fields: [createdById], references: [id])
+  // Snapshot imutável da vistoria — usado para emissão e relatórios
+  customerDoc       String?
+  customerName      String?
+  customerCep       String?
+  customerStreet    String?
+  customerNumber    String?
+  customerDistrict  String?
+  customerCity      String?
+  vehiclePlate      String?
+  vehicleBrand      String?
+  vehicleModel      String?
 
-  job           InvoiceJob?
+  createdById       String
+  createdBy         User          @relation("InspectionsCreatedBy", fields: [createdById], references: [id])
+
+  job               InvoiceJob?
 
   @@index([date])
   @@index([status])

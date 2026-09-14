@@ -9,21 +9,28 @@ function formatBR(date: Date) {
 }
 
 function isComplete(insp: {
-  customer: { cep: string; street: string; number: string; district: string; city: string; doc: string; name: string };
-  vehicle: { plate: string; brand: string; model: string } | null;
+  customerDoc: string | null;
+  customerCep: string | null;
+  customerStreet: string | null;
+  customerNumber: string | null;
+  customerDistrict: string | null;
+  customerCity: string | null;
+  customerName: string | null;
+  vehiclePlate: string | null;
+  vehicleBrand: string | null;
+  vehicleModel: string | null;
 }) {
-  const cep = String(insp.customer.cep || "").replace(/\D/g, "");
+  const cep = String(insp.customerCep || "").replace(/\D/g, "");
   if (cep.length !== 8) return false;
-  if (!String(insp.customer.street || "").trim()) return false;
-  if (!String(insp.customer.number || "").trim()) return false;
-  if (!String(insp.customer.district || "").trim()) return false;
-  if (!String(insp.customer.city || "").trim()) return false;
-  if (!String(insp.customer.doc || "").trim()) return false;
-  if (!String(insp.customer.name || "").trim()) return false;
-  if (!insp.vehicle) return false;
-  if (!String(insp.vehicle.plate || "").trim()) return false;
-  if (!String(insp.vehicle.brand || "").trim()) return false;
-  if (!String(insp.vehicle.model || "").trim()) return false;
+  if (!String(insp.customerStreet || "").trim()) return false;
+  if (!String(insp.customerNumber || "").trim()) return false;
+  if (!String(insp.customerDistrict || "").trim()) return false;
+  if (!String(insp.customerCity || "").trim()) return false;
+  if (!String(insp.customerDoc || "").trim()) return false;
+  if (!String(insp.customerName || "").trim()) return false;
+  if (!String(insp.vehiclePlate || "").trim()) return false;
+  if (!String(insp.vehicleBrand || "").trim()) return false;
+  if (!String(insp.vehicleModel || "").trim()) return false;
   return true;
 }
 
@@ -75,8 +82,6 @@ export async function POST(req: Request) {
       continue;
     }
 
-    // Claim atômico: se outro worker pegou o job entre a leitura e o update,
-    // o WHERE não casa e nada é alterado — buscamos o próximo job.
     const claim = await prisma.invoiceJob.updateMany({
       where: { id: job.id, status: job.status, updatedAt: job.updatedAt },
       data: { status: "PROCESSANDO", attempts: { increment: 1 } },
@@ -85,7 +90,7 @@ export async function POST(req: Request) {
 
     const lastNfse = await prisma.inspection.findFirst({
       where: {
-        customer: { doc: insp.customer.doc },
+        customer: { doc: insp.customerDoc ?? "" },
         nfseNumber: { not: null },
         id: { not: insp.id },
       },
@@ -100,16 +105,16 @@ export async function POST(req: Request) {
         competenceDate: formatBR(insp.date),
         paidValue: Number(insp.paidValue),
         noteValue: Number(insp.noteValue),
-        plate: insp.vehicle?.plate ?? "",
-        vehicleBrand: insp.vehicle?.brand ?? "",
-        vehicleModel: insp.vehicle?.model ?? "",
-        customerDoc: insp.customer.doc,
-        customerName: insp.customer.name,
-        cep: insp.customer.cep,
-        street: insp.customer.street,
-        number: insp.customer.number,
-        district: insp.customer.district,
-        city: insp.customer.city,
+        plate: insp.vehiclePlate ?? "",
+        vehicleBrand: insp.vehicleBrand ?? "",
+        vehicleModel: insp.vehicleModel ?? "",
+        customerDoc: insp.customerDoc ?? "",
+        customerName: insp.customerName ?? "",
+        cep: insp.customerCep ?? "",
+        street: insp.customerStreet ?? "",
+        number: insp.customerNumber ?? "",
+        district: insp.customerDistrict ?? "",
+        city: insp.customerCity ?? "",
         lastNfseNumber: lastNfse?.nfseNumber ?? null,
         dpsNumber: insp.nDps,
       },

@@ -40,8 +40,17 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       return NextResponse.json({ ok: false, message: "Vistoria não encontrada." }, { status: 404 });
     }
 
+    const isEmitted = existing.status === "LANCADO" || existing.status === "EMITIDA";
+
     let customerId = existing.customerId;
     let vehicleId: string | null = existing.vehicleId;
+
+    if (isEmitted && (data.customerDoc !== undefined || data.plate !== undefined || data.paidValue !== undefined || data.noteValue !== undefined || data.date !== undefined)) {
+      return NextResponse.json(
+        { ok: false, message: "Vistoria já emitida. Dados não podem ser alterados." },
+        { status: 400 },
+      );
+    }
 
     if (data.customerDoc !== undefined) {
       if (
@@ -116,6 +125,18 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       }
       inspectionData.date = date;
     }
+
+    // Snapshot imutável quando ainda não emitido
+    if (data.customerDoc !== undefined) inspectionData.customerDoc = data.customerDoc;
+    if (data.customerName !== undefined) inspectionData.customerName = data.customerName;
+    if (data.cep !== undefined) inspectionData.customerCep = data.cep;
+    if (data.street !== undefined) inspectionData.customerStreet = data.street;
+    if (data.number !== undefined) inspectionData.customerNumber = data.number;
+    if (data.district !== undefined) inspectionData.customerDistrict = data.district;
+    if (data.city !== undefined) inspectionData.customerCity = cityKey(data.city);
+    if (data.plate !== undefined) inspectionData.vehiclePlate = data.plate;
+    if (data.vehicleBrand !== undefined) inspectionData.vehicleBrand = data.vehicleBrand;
+    if (data.vehicleModel !== undefined) inspectionData.vehicleModel = data.vehicleModel;
     if (data.status !== undefined) {
       inspectionData.status = data.status;
     }

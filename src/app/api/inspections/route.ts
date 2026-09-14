@@ -116,9 +116,20 @@ async function createInspection(data: z.infer<typeof createInspectionSchema>, us
       paidValue: paidValueStr,
       noteValue: noteValueStr,
       customerId: customer.id,
-      vehicleId: vehicle.id,
+      vehicleId: vehicle?.id ?? null,
       createdById: userId,
       status: "AGUARDANDO",
+      // Snapshot imutável da vistoria
+      customerDoc: data.customerDoc,
+      customerName: data.customerName,
+      customerCep: data.cep,
+      customerStreet: data.street,
+      customerNumber: data.number,
+      customerDistrict: data.district,
+      customerCity: city,
+      vehiclePlate: data.plate,
+      vehicleBrand: data.vehicleBrand,
+      vehicleModel: data.vehicleModel,
       job: {
         create: {
           status: "FILA",
