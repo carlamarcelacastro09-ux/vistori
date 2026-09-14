@@ -77,7 +77,7 @@ async function reserveDps(cnpj: string, serie: string): Promise<number> {
   return rows[0].lastNumber;
 }
 
-async function emitirNota(cliente: NfseClient, tpAmb: TipoAmbienteDps, job: any, nDps: string, useFallbackCep = false): Promise<string> {
+async function emitirNota(cliente: NfseClient, tpAmb: TipoAmbienteDps, job: any, nDps: string, useFallbackCep = false): Promise<{ nNFSe: string; nDPS: string }> {
   const docLimpo = onlyDigits(job.customer.doc);
   const cepLimpo = useFallbackCep ? "14850037" : onlyDigits(job.customer.cep);
   if (!docLimpo) throw new Error("Sem documento válido.");
@@ -136,8 +136,8 @@ async function emitirNota(cliente: NfseClient, tpAmb: TipoAmbienteDps, job: any,
 
   if (r.status === "ok") {
     const nNFSe = r.nfse.nfse.infNFSe.nNFSe;
-    log(`  SUCESSO nNFSe ${nNFSe}`);
-    return String(nNFSe);
+    log(`  SUCESSO nNFSe ${nNFSe} | nDPS ${nDps}`);
+    return { nNFSe: String(nNFSe), nDPS: nDps };
   }
   throw new Error(`Emissão pendente: ${r.pending.id}`);
 }
@@ -148,8 +148,8 @@ async function emitirComAvancoDeSerie(cliente: NfseClient, tpAmb: TipoAmbienteDp
     const nDps = String(nDpsNumber);
     await prisma.inspection.update({ where: { id: job.id }, data: { nDps } });
     try {
-      const nNFSe = await emitirNota(cliente, tpAmb, job, nDps, useFallbackCep);
-      return { nNFSe, nDps };
+      const { nNFSe, nDPS } = await emitirNota(cliente, tpAmb, job, nDps, useFallbackCep);
+      return { nNFSe, nDps: nDPS };
     } catch (e) {
       if (e instanceof ReceitaRejectionError && e.codigo === "E0014" && tentativa < 5) {
         log(`  E0014 nDPS ${nDps}, avançando...`);
@@ -191,7 +191,7 @@ async function main() {
         await prisma.$transaction([
           prisma.inspection.update({
             where: { id: insp.id },
-            data: { status: "LANCADO", nfseNumber: nNFSe, nDps, errorMessage: null },
+            data: { status: "LANCADO", nfseNumber: nDps, nDps, errorMessage: null },
           }),
           prisma.invoiceJob.update({
             where: { id: job.id },
@@ -208,7 +208,7 @@ async function main() {
             await prisma.$transaction([
               prisma.inspection.update({
                 where: { id: insp.id },
-                data: { status: "LANCADO", nfseNumber: nNFSe, nDps, errorMessage: null },
+                data: { status: "LANCADO", nfseNumber: nDps, nDps, errorMessage: null },
               }),
               prisma.invoiceJob.update({
                 where: { id: job.id },

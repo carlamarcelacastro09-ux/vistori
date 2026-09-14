@@ -134,7 +134,7 @@ function createNfseClient() {
 
 const CEP_FALLBACK = "14850037";
 
-async function emitirNota(cliente: NfseClient, tpAmb: TipoAmbienteDps, job: Job, useFallbackCep = false): Promise<string> {
+async function emitirNota(cliente: NfseClient, dpsCounter: DpsCounter & { lastIssued: string | null }, tpAmb: TipoAmbienteDps, job: Job, useFallbackCep = false): Promise<string> {
   const docLimpo = onlyDigits(job.customerDoc);
   const cepLimpo = useFallbackCep ? CEP_FALLBACK : onlyDigits(job.cep);
 
@@ -207,8 +207,9 @@ async function emitirNota(cliente: NfseClient, tpAmb: TipoAmbienteDps, job: Job,
   if (r.status === "ok") {
     const chave = r.nfse.chaveAcesso;
     const nNFSe = r.nfse.nfse.infNFSe.nNFSe;
-    log(`SUCESSO: NFS-e emitida! Chave: ${chave} | Número: ${nNFSe}`);
-    return String(nNFSe);
+    const nDPS = dpsCounter.lastIssued ?? nNFSe;
+    log(`SUCESSO: NFS-e emitida! Chave: ${chave} | nNFSe: ${nNFSe} | nDPS: ${nDPS}`);
+    return String(nDPS);
   }
 
   // retry_pending — transiente, a lib salvou no store
@@ -265,13 +266,14 @@ const MAX_TENTATIVAS_E0014 = 5;
  */
 async function emitirComAvancoDeSerie(
   cliente: NfseClient,
+  dpsCounter: DpsCounter & { lastIssued: string | null },
   tpAmb: TipoAmbienteDps,
   job: Job,
   useFallbackCep = false,
 ): Promise<string> {
   for (let tentativa = 1; ; tentativa++) {
     try {
-      return await emitirNota(cliente, tpAmb, job, useFallbackCep);
+      return await emitirNota(cliente, dpsCounter, tpAmb, job, useFallbackCep);
     } catch (e) {
       const duplicado = e instanceof ReceitaRejectionError && e.codigo === "E0014";
       if (!duplicado || tentativa >= MAX_TENTATIVAS_E0014) throw e;
@@ -348,7 +350,7 @@ async function runSession(singleJob: boolean) {
           }
         }
 
-        const numero = await emitirComAvancoDeSerie(cliente, tpAmb, next.job);
+        const numero = await emitirComAvancoDeSerie(cliente, dpsCounter, tpAmb, next.job);
 
         await updateJob({ jobId: next.job.jobId, status: "LANCADO", nfseNumber: numero, dpsNumber: dpsCounter.lastIssued ?? undefined });
         process.stdout.write(`Job ${next.job.jobId} concluído. Nota ${numero}.\n`);
@@ -359,7 +361,7 @@ async function runSession(singleJob: boolean) {
         if (e instanceof ReceitaRejectionError && e.codigo === "E0240") {
           log(`CEP inválido (${next.job.cep}). Retentando com CEP padrão ${CEP_FALLBACK}...`);
           try {
-            const numero = await emitirComAvancoDeSerie(cliente, tpAmb, next.job, true);
+            const numero = await emitirComAvancoDeSerie(cliente, dpsCounter, tpAmb, next.job, true);
             await updateJob({ jobId: next.job.jobId, status: "LANCADO", nfseNumber: numero, dpsNumber: dpsCounter.lastIssued ?? undefined });
             process.stdout.write(`Job ${next.job.jobId} concluído (CEP fallback). Nota ${numero}.\n`);
             if (singleJob) break;
