@@ -34,7 +34,9 @@ export default function RootLayout({
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
         />
       </head>
-      <body>{children}</body>
+      <body className="antialiased">
+        <main className="min-vh-100">{children}</main>
+      </body>
     </html>
   );
 }

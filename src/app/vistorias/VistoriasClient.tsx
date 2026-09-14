@@ -347,10 +347,10 @@ export default function VistoriasClient({
   }
 
   const cards = [
-    { label: "Total", value: data.length, color: "#2c3e50", bg: "#f8f9fa" },
-    { label: "Aguardando", value: totalAguardando, color: "#6c757d", bg: "#f8f9fa" },
-    { label: "Lançada", value: totalLancada, color: "#198754", bg: "#e6f4ea" },
-    { label: "Erro", value: totalErro, color: "#dc3545", bg: "#f8d7da" },
+    { label: "Total", value: data.length, color: "#1e293b", bg: "#ffffff" },
+    { label: "Aguardando", value: totalAguardando, color: "#64748b", bg: "#ffffff" },
+    { label: "Lançada", value: totalLancada, color: "#10b981", bg: "#ecfdf5" },
+    { label: "Erro", value: totalErro, color: "#ef4444", bg: "#fef2f2" },
   ];
 
   const statusBadge = (s: Row["status"]) => {
@@ -369,24 +369,25 @@ export default function VistoriasClient({
       <div className="row g-2">
         {cards.map((c) => (
           <div className="col-6 col-md-3" key={c.label}>
-            <div className="card border-0 shadow-sm h-100" style={{ borderRadius: 12, background: c.bg }}>
-              <div className="card-body py-2 px-3">
-                <div className="text-muted" style={{ fontSize: 11, fontWeight: 500 }}>{c.label}</div>
-                <div className="fw-bold" style={{ fontSize: 20, color: c.color }}>{c.value}</div>
+            <div className="card h-100" style={{ borderRadius: 14, background: c.bg, borderLeft: `4px solid ${c.color}` }}>
+              <div className="card-body py-3 px-3">
+                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>{c.label}</div>
+                <div className="fw-bold mt-1" style={{ fontSize: 24, color: c.color }}>{c.value}</div>
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="card border-0 shadow-sm" style={{ borderRadius: 12 }}>
-        <div className="card-body py-3 px-3">
-          <div className="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-2 mb-3">
+      <div className="card" style={{ borderRadius: 14 }}>
+        <div className="card-body py-4 px-4">
+          <div className="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-2 mb-4">
             <div>
-              <h2 className="h5 fw-bold mb-0" style={{ color: "#2c3e50" }}>Relação de Notas</h2>
+              <h2 className="h5 fw-bold mb-0" style={{ color: "var(--foreground)" }}>Relação de Notas</h2>
+              <div className="text-muted" style={{ fontSize: 13 }}>Acompanhe o status de cada vistoria</div>
             </div>
-            <button className="btn btn-outline-secondary btn-sm" onClick={exportCSV} disabled={filtered.length === 0}>
-              Exportar CSV
+            <button className="btn btn-outline-primary btn-sm" onClick={exportCSV} disabled={filtered.length === 0}>
+              <i className="bi bi-download me-1"></i> Exportar CSV
             </button>
           </div>
 
@@ -420,9 +421,9 @@ export default function VistoriasClient({
             </div>
           </div>
 
-          <div className="table-responsive" style={{ borderRadius: 8 }}>
+          <div className="table-responsive" style={{ borderRadius: 12 }}>
             <table className="table table-sm table-hover align-middle mb-0" style={{ minWidth: 820, fontSize: 13 }}>
-              <thead className="table-light">
+              <thead style={{ background: "#f8fafc" }}>
                 <tr>
                   <th style={{ width: 90 }}>Data</th>
                   <th>Placa</th>
