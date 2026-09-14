@@ -166,7 +166,7 @@ export default function CustomersClient() {
       <div className="card-body">
         <div className="d-flex flex-column flex-md-row gap-3 justify-content-between align-items-md-center mb-3">
           <div>
-            <div className="fw-bold" style={{ color: "#2c3e50", fontSize: 18 }}>
+            <div className="fw-bold" style={{ color: "var(--foreground)", fontSize: 18 }}>
               Clientes
             </div>
             <div className="text-muted" style={{ fontSize: 13 }}>

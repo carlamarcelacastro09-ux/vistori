@@ -31,7 +31,7 @@ export default function AdministracaoClient({ counts }: { counts: Counts }) {
   return (
     <div>
       <div className="mb-4">
-        <h1 className="h3 fw-bold mb-1" style={{ color: "#2c3e50" }}>
+        <h1 className="h3 fw-bold mb-1" style={{ color: "var(--foreground)" }}>
           Administração
         </h1>
         <div className="text-muted">Usuários, clientes, veículos e cadastro de ruas/CEP em um só lugar.</div>
@@ -88,7 +88,7 @@ function PainelTab({ counts, onGo }: { counts: Counts; onGo: (t: Tab) => void })
         <button type="button" className="card border-0 shadow-sm w-100 text-start h-100" style={{ borderRadius: 14 }} onClick={() => onGo("clientes")}>
           <div className="card-body">
             <div className="text-muted small">Clientes</div>
-            <div className="display-6 fw-bold" style={{ color: "#2c3e50" }}>
+            <div className="display-6 fw-bold" style={{ color: "var(--foreground)" }}>
               {counts.customers}
             </div>
             <div className="small text-primary mt-2">Abrir cadastro →</div>
@@ -99,7 +99,7 @@ function PainelTab({ counts, onGo }: { counts: Counts; onGo: (t: Tab) => void })
         <button type="button" className="card border-0 shadow-sm w-100 text-start h-100" style={{ borderRadius: 14 }} onClick={() => onGo("veiculos")}>
           <div className="card-body">
             <div className="text-muted small">Veículos</div>
-            <div className="display-6 fw-bold" style={{ color: "#2c3e50" }}>
+            <div className="display-6 fw-bold" style={{ color: "var(--foreground)" }}>
               {counts.vehicles}
             </div>
             <div className="small text-primary mt-2">Ver veículos →</div>
@@ -110,7 +110,7 @@ function PainelTab({ counts, onGo }: { counts: Counts; onGo: (t: Tab) => void })
         <button type="button" className="card border-0 shadow-sm w-100 text-start h-100" style={{ borderRadius: 14 }} onClick={() => onGo("ruas")}>
           <div className="card-body">
             <div className="text-muted small">Ruas (CEP)</div>
-            <div className="display-6 fw-bold" style={{ color: "#2c3e50" }}>
+            <div className="display-6 fw-bold" style={{ color: "var(--foreground)" }}>
               {counts.streets}
             </div>
             <div className="small text-primary mt-2">Abrir ruas →</div>
@@ -223,7 +223,7 @@ function VeiculosTab() {
       <div className="col-lg-4">
         <div className="card border-0 shadow-sm" style={{ borderRadius: 14 }}>
           <div className="card-body">
-            <div className="fw-bold mb-2" style={{ color: "#2c3e50" }}>
+            <div className="fw-bold mb-2" style={{ color: "var(--foreground)" }}>
               {edit ? "Editar veículo" : "Novo veículo"}
             </div>
             {error ? <div className="alert alert-danger py-2 small">{error}</div> : null}
@@ -287,7 +287,7 @@ function VeiculosTab() {
         <div className="card border-0 shadow-sm" style={{ borderRadius: 14 }}>
           <div className="card-body">
             <div className="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
-              <div className="fw-bold" style={{ color: "#2c3e50" }}>
+              <div className="fw-bold" style={{ color: "var(--foreground)" }}>
                 Lista de veículos
               </div>
               <div className="d-flex gap-2 flex-grow-1" style={{ minWidth: 200, maxWidth: 360 }}>
@@ -471,7 +471,7 @@ function RuasTab() {
       <div className="col-lg-4">
         <div className="card border-0 shadow-sm" style={{ borderRadius: 14 }}>
           <div className="card-body">
-            <div className="fw-bold mb-2" style={{ color: "#2c3e50" }}>
+            <div className="fw-bold mb-2" style={{ color: "var(--foreground)" }}>
               {edit ? "Editar rua" : "Nova rua (CEP)"}
             </div>
             <p className="text-muted small">Usado na busca de endereço na nova vistoria. Combinação rua+bairro+cidade+CEP deve ser única.</p>
@@ -521,7 +521,7 @@ function RuasTab() {
         <div className="card border-0 shadow-sm" style={{ borderRadius: 14 }}>
           <div className="card-body">
             <div className="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
-              <div className="fw-bold" style={{ color: "#2c3e50" }}>
+              <div className="fw-bold" style={{ color: "var(--foreground)" }}>
                 Ruas cadastradas
               </div>
               <div className="d-flex gap-2 flex-grow-1" style={{ minWidth: 200, maxWidth: 400 }}>

@@ -260,7 +260,7 @@ export default function FinanceiroClient({
       <div className="card border-0 shadow-sm" style={{ borderRadius: 12 }}>
         <div className="card-body py-3 px-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
           <div>
-            <h1 className="h4 fw-bold mb-1" style={{ color: "#2c3e50" }}>Financeiro</h1>
+            <h1 className="h4 fw-bold mb-1" style={{ color: "var(--foreground)" }}>Financeiro</h1>
             <div className="text-muted" style={{ fontSize: 13 }}>Controle mensal de receitas, notas e contas a pagar.</div>
           </div>
           <div className="d-flex align-items-center gap-2">
@@ -284,7 +284,7 @@ export default function FinanceiroClient({
           <div className={cardBase} style={{ borderRadius: 12, background: "#f0f7ff" }}>
             <div className={cardBody}>
               <div className="text-muted" style={{ fontSize: 11, fontWeight: 500 }}>Receita do mês</div>
-              <div className="fw-bold" style={{ fontSize: 20, color: "#0d6efd" }}>{toBRL(totals.receita)}</div>
+              <div className="fw-bold" style={{ fontSize: 20, color: "var(--primary)" }}>{toBRL(totals.receita)}</div>
             </div>
           </div>
         </div>
@@ -292,23 +292,23 @@ export default function FinanceiroClient({
           <div className={cardBase} style={{ borderRadius: 12, background: "#fff5f5" }}>
             <div className={cardBody}>
               <div className="text-muted" style={{ fontSize: 11, fontWeight: 500 }}>Despesas do mês</div>
-              <div className="fw-bold" style={{ fontSize: 20, color: "#dc3545" }}>{toBRL(totals.despesas)}</div>
+              <div className="fw-bold" style={{ fontSize: 20, color: "var(--danger)" }}>{toBRL(totals.despesas)}</div>
             </div>
           </div>
         </div>
         <div className="col-6 col-md-3">
-          <div className={cardBase} style={{ borderRadius: 12, background: "#e6f4ea" }}>
+          <div className={cardBase} style={{ borderRadius: 12, background: "#ecfdf5" }}>
             <div className={cardBody}>
               <div className="text-muted" style={{ fontSize: 11, fontWeight: 500 }}>Pago no mês</div>
-              <div className="fw-bold" style={{ fontSize: 20, color: "#198754" }}>{toBRL(totals.despesasPagas)}</div>
+              <div className="fw-bold" style={{ fontSize: 20, color: "var(--success)" }}>{toBRL(totals.despesasPagas)}</div>
             </div>
           </div>
         </div>
         <div className="col-6 col-md-3">
-          <div className={cardBase} style={{ borderRadius: 12, background: totals.saldo >= 0 ? "#e6f4ea" : "#f8f9fa" }}>
+          <div className={cardBase} style={{ borderRadius: 12, background: totals.saldo >= 0 ? "#ecfdf5" : "#f8fafc" }}>
             <div className={cardBody}>
               <div className="text-muted" style={{ fontSize: 11, fontWeight: 500 }}>Saldo</div>
-              <div className="fw-bold" style={{ fontSize: 20, color: totals.saldo >= 0 ? "#198754" : "#6c757d" }}>{toBRL(totals.saldo)}</div>
+              <div className="fw-bold" style={{ fontSize: 20, color: totals.saldo >= 0 ? "var(--success)" : "var(--muted)" }}>{toBRL(totals.saldo)}</div>
             </div>
           </div>
         </div>
@@ -344,7 +344,7 @@ export default function FinanceiroClient({
           <div className="card border-0 shadow-sm" style={{ borderRadius: 12 }}>
             <div className="card-body py-3 px-3">
               <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
-                <h2 className="h6 fw-bold mb-0" style={{ color: "#2c3e50" }}>
+                <h2 className="h6 fw-bold mb-0" style={{ color: "var(--foreground)" }}>
                   Notas de {monthLabel(selectedMonth)}
                 </h2>
                 <div className="d-flex flex-wrap gap-2 align-items-center">
@@ -381,7 +381,7 @@ export default function FinanceiroClient({
                           <div className="card-body py-2 px-3 d-flex justify-content-between align-items-center gap-2">
                             <div className="flex-grow-1 min-w-0">
                               <div className="d-flex align-items-center gap-2 mb-1">
-                                <span className="fw-semibold text-truncate" style={{ color: "#2c3e50" }}>{r.plate || "-"}</span>
+                                <span className="fw-semibold text-truncate" style={{ color: "var(--foreground)" }}>{r.plate || "-"}</span>
                                 {statusBadge(r.status)}
                               </div>
                               <div className="text-muted text-truncate" style={{ fontSize: 12 }}>{r.customerName}</div>
@@ -421,14 +421,14 @@ export default function FinanceiroClient({
           <div className="card border-0 shadow-sm" style={{ borderRadius: 12 }}>
             <div className="card-body py-3 px-3">
               <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
-                <h2 className="h6 fw-bold mb-0" style={{ color: "#2c3e50" }}>Contas de {monthLabel(selectedMonth)}</h2>
+                <h2 className="h6 fw-bold mb-0" style={{ color: "var(--foreground)" }}>Contas de {monthLabel(selectedMonth)}</h2>
                 <button className="btn btn-primary btn-sm" onClick={() => openForm()}>
                   + Nova conta
                 </button>
               </div>
 
               {formOpen && (
-                <form onSubmit={saveAccount} className="card border-0 shadow-sm mb-3" style={{ borderRadius: 10, background: "#f8f9fa" }}>
+                <form onSubmit={saveAccount} className="card border-0 shadow-sm mb-3" style={{ borderRadius: 10, background: "#f8fafc" }}>
                   <div className="card-body p-3">
                     <div className="row g-2">
                       <div className="col-md-5">
